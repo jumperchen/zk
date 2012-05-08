@@ -63,6 +63,7 @@ var globallocalizedSymbols = {},
 zul.db.Datebox = zk.$extends(zul.inp.FormatWidget, {
 	_buttonVisible: true,
 	_lenient: true,
+	_numberOfMonths: 1,
 	$init: function() {
 		this.$supers('$init', arguments);
 		this.afterInit(_initPopup);
@@ -268,7 +269,8 @@ zul.db.Datebox = zk.$extends(zul.inp.FormatWidget, {
 				if (this._pop)
 					this._pop.setLocalizedSymbols(this._localizedSymbols);
 			}
-		]
+		],
+		numberOfMonths: null
 	},
 	_setTimeZonesIndex: function () {
 		var select = this.$n('dtzones');
