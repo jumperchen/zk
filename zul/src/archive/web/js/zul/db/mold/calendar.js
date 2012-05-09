@@ -38,8 +38,8 @@ function (out) {
 			   FMON: zk.FMON,
 				APM: zk.APM
 		},
-		db = this.parent,
-		numOfMonths = db ? db.getNumberOfMonths() : 1;
+		parent = this.parent,
+		numOfMonths = parent.$instanceof(zul.db.Datebox) ? parent.getNumberOfMonths() : 1;
 	
 	out.push('<div ', this.domAttrs_(), '><table style="table-layout: fixed" width="', 215*numOfMonths, 'px"', zUtl.cellps0, '>',
 			'<tr><td id="', uuid, '-tdl" class="', zcls, '-tdl');

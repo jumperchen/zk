@@ -500,12 +500,24 @@ the short time styling.
 		}
 	}
 	
+	/**
+	 * Returns the number of months that show in drop down calendar.
+	 * <p>
+	 * Default: 1.
+	 * @return int
+	 */
 	public int getNumberOfMonths() {
 		return _numOfMonths;
 	}
 	
-	public void setNumberOfMonths(int numOfMonths) {
-		if (numOfMonths < 1) return;
+	/**
+	 * Sets number of months to show in drop down calendar.
+	 * @param numOfMonths
+	 * @since 6.5.0
+	 */
+	public void setNumberOfMonths(int numOfMonths) throws WrongValueException {
+		if (numOfMonths < 1)
+			throw new WrongValueException("Number of months must large than 1: " + numOfMonths);
 		
 		if (_numOfMonths != numOfMonths) {
 			_numOfMonths = numOfMonths;

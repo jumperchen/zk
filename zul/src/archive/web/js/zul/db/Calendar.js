@@ -244,7 +244,7 @@ zul.db.Calendar = zk.$extends(zul.Widget, {
 			else
 				this.rerender();
 			break;
-		default:			
+		default:
 			this.rerender();
 //			break;
 		}
@@ -283,21 +283,22 @@ zul.db.Calendar = zk.$extends(zul.Widget, {
 		this.$supers(Calendar, 'bind_', arguments);
 		var node = this.$n(),
 			title = this.$n("title"),
-			tdl = this.$n("tdl"),
-			tdr = this.$n("tdr")
 			mid = this.$n("mid"),
+			tdl = this.$n("tdl"),
+			tdr = this.$n("tdr"),
 			zcls = this.getZclass(),
-			db = this.parent,
-			numOfMonths = db ? db.getNumberOfMonths() : 1,
-			mids = [];
-			
-		for (var i = 0; i < numOfMonths; ++i) {
-			mids[i] = this.$n("mid" + i);
-			this.domListen_(mids[i], "onClick", '_clickDate')
-				.domListen_(mids[i], "onMouseOver", '_doMouseEffect')
-				.domListen_(mids[i], "onMouseOut", '_doMouseEffect');
-		}
+			parent = this.parent,
+			numOfMonths = parent.$instanceof(zul.db.Datebox) ? parent.getNumberOfMonths() : 1;
 		
+		if (numOfMonths > 1) {
+			var mids = [];
+			for (var i = 0; i < numOfMonths; ++i) {
+				mids[i] = this.$n("mid" + i);
+				this.domListen_(mids[i], "onClick", '_clickDate')
+					.domListen_(mids[i], "onMouseOver", '_doMouseEffect')
+					.domListen_(mids[i], "onMouseOut", '_doMouseEffect');
+			}
+		}
 		jq(title).hover(
 			function () {
 				jq(this).toggleClass(zcls + "-title-over");
@@ -310,46 +311,48 @@ zul.db.Calendar = zk.$extends(zul.Widget, {
 			this._markCal({silent: true});
 
 		this.domListen_(title, "onClick", '_changeView')
+			.domListen_(mid, "onClick", '_clickDate')
 			.domListen_(tdl, "onClick", '_clickArrow')
 			.domListen_(tdl, "onMouseOver", '_doMouseEffect')
 			.domListen_(tdl, "onMouseOut", '_doMouseEffect')
 			.domListen_(tdr, "onClick", '_clickArrow')
 			.domListen_(tdr, "onMouseOver", '_doMouseEffect')
 			.domListen_(tdr, "onMouseOut", '_doMouseEffect')
-			.domListen_(node, 'onMousewheel')
-			.domListen_(mid, "onClick", '_clickDate')
 			.domListen_(mid, "onMouseOver", '_doMouseEffect')
-			.domListen_(mid, "onMouseOut", '_doMouseEffect');
+			.domListen_(mid, "onMouseOut", '_doMouseEffect')
+			.domListen_(node, 'onMousewheel');
 
 		this._updFormData(this.getTime());
 	},
 	unbind_: function () {
 		var node = this.$n(),
 			title = this.$n("title"),
+			mid = this.$n("mid"),
 			tdl = this.$n("tdl"),
 			tdr = this.$n("tdr"),
-			mid = this.$n("mid"),
-			db = this.parent,
-			numOfMonths = db ? db.getNumberOfMonths() : 1,
-			mids = [];
+			parent = this.parent,
+			numOfMonths = parent.$instanceof(zul.db.Datebox) ? parent.getNumberOfMonths() : 1;
 		
-		for (var i = 0; i < numOfMonths; ++i) {
-			mids[i] = this.$n("mid" + i);
-			this.domUnlisten_(mids[i], "onClick", '_clickDate')
-				.domUnlisten_(mids[i], "onMouseOver", '_doMouseEffect')
-				.domUnlisten_(mids[i], "onMouseOut", '_doMouseEffect');
+		if (numOfMonths > 1) {
+			var mids = [];
+			for (var i = 0; i < numOfMonths; ++i) {
+				mids[i] = this.$n("mid" + i);
+				this.domUnlisten_(mids[i], "onClick", '_clickDate')
+					.domUnlisten_(mids[i], "onMouseOver", '_doMouseEffect')
+					.domUnlisten_(mids[i], "onMouseOut", '_doMouseEffect');
+			}
 		}
 		this.domUnlisten_(title, "onClick", '_changeView')
-			.domUnlisten_(tdl, "onClick", '_clickArrow')			
+			.domUnlisten_(mid, "onClick", '_clickDate')
+			.domUnlisten_(tdl, "onClick", '_clickArrow')
 			.domUnlisten_(tdl, "onMouseOver", '_doMouseEffect')
 			.domUnlisten_(tdl, "onMouseOut", '_doMouseEffect')
 			.domUnlisten_(tdr, "onClick", '_clickArrow')
 			.domUnlisten_(tdr, "onMouseOver", '_doMouseEffect')
 			.domUnlisten_(tdr, "onMouseOut", '_doMouseEffect')
-			.domUnlisten_(node, 'onMousewheel')
-			.domUnlisten_(mid, "onClick", '_clickDate')
 			.domUnlisten_(mid, "onMouseOver", '_doMouseEffect')
 			.domUnlisten_(mid, "onMouseOut", '_doMouseEffect')
+			.domUnlisten_(node, 'onMousewheel')
 			.$supers(Calendar, 'unbind_', arguments);
 		this.efield = null;
 	},
@@ -369,8 +372,8 @@ zul.db.Calendar = zk.$extends(zul.Widget, {
 		var node = evt.domTarget.id.indexOf("-ly") > 0 ? this.$n("tdl") :
 				   evt.domTarget.id.indexOf("-ry") > 0 ?  this.$n("tdr") :
 				   evt.domTarget,
-			db = this.parent,
-			numOfMonths = db ? db.getNumberOfMonths() : 1;
+			parent = this.parent,
+			numOfMonths = parent.$instanceof(zul.db.Datebox) ? parent.getNumberOfMonths() : 1;
 		if (jq(node).hasClass(this.getZclass() + '-icon-disd'))
 			return;
 		if (this._view == 'day')
@@ -435,8 +438,8 @@ zul.db.Calendar = zk.$extends(zul.Widget, {
 	},
 	_clickDate: function (evt) {
 		var target = evt.domTarget, val,
-			db = this.parent,
-			numOfMonths = db ? db.getNumberOfMonths() : 1;
+			parent = this.parent,
+			numOfMonths = parent.$instanceof(zul.db.Datebox) ? parent.getNumberOfMonths() : 1;
 		for (; target; target = target.parentNode)
 			try { //Note: _dt is also used in mold/calendar.js
 				if ((val = jq(target).attr("_dt")) !== undefined) {
@@ -459,7 +462,6 @@ zul.db.Calendar = zk.$extends(zul.Widget, {
 		if (target && !jq(target).hasClass(this.getZclass() + '-disd')) {
 			var cell = target,
 				dateobj = this.getTime();
-			console.log(target);
 			switch(this._view) {
 			case "day" :
 				var oldTime = this.getTime();
@@ -538,8 +540,8 @@ zul.db.Calendar = zk.$extends(zul.Widget, {
 		 	seldate = this.getTime(),
 		 	m = seldate.getMonth(),
 			y = seldate.getFullYear(),
-			db = this.parent,
-			numOfMonths = db ? db.getNumberOfMonths() : 1;
+			parent = this.parent,
+			numOfMonths = parent.$instanceof(zul.db.Datebox) ? parent.getNumberOfMonths() : 1;
 		
 		if (this._view == 'day') {
 			for (var i = 0; i < numOfMonths; ++i) {

@@ -270,6 +270,16 @@ zul.db.Datebox = zk.$extends(zul.inp.FormatWidget, {
 					this._pop.setLocalizedSymbols(this._localizedSymbols);
 			}
 		],
+		/**
+		 * Sets number of months to show in drop down calendar.
+		 * @param int numberOfMonths
+		 */
+		/**
+		 * Returns the number of months that show in drop down calendar.
+		 * <p>
+		 * Default: 1.
+		 * @return int
+		 */
 		numberOfMonths: null
 	},
 	_setTimeZonesIndex: function () {
