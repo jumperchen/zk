@@ -73,6 +73,7 @@ public class Datebox extends FormatInputElement {
 	private Locale _locale;
 	private boolean _btnVisible = true, _lenient = true, _dtzonesReadonly = false;
 	private static Map<Locale, Object> _symbols = new HashMap<Locale, Object>(8);
+	private int _numOfMonths = 1;
 	
 	static {
 		addClientEvent(Datebox.class, "onTimeZoneChange", CE_IMPORTANT|CE_DUPLICATE_IGNORE);
@@ -499,6 +500,19 @@ the short time styling.
 		}
 	}
 	
+	public int getNumberOfMonths() {
+		return _numOfMonths;
+	}
+	
+	public void setNumberOfMonths(int numOfMonths) {
+		if (numOfMonths < 1) return;
+		
+		if (_numOfMonths != numOfMonths) {
+			_numOfMonths = numOfMonths;
+			smartUpdate("numberOfMonths", _numOfMonths);
+		}
+	}
+	
 	private static Map loadSymbols(Locale locale) {
 		WaitLock lock = null;
 		for (;;) {
@@ -854,5 +868,8 @@ the short time styling.
 
 		if (_locale != null)
 			renderer.render("localizedSymbols", getRealSymbols(_locale, this));
+		
+		if (_numOfMonths != 1)
+			renderer.render("numberOfMonths", _numOfMonths);
 	}
 }
