@@ -73,6 +73,7 @@ public class Datebox extends FormatInputElement {
 	private Locale _locale;
 	private boolean _btnVisible = true, _lenient = true, _dtzonesReadonly = false;
 	private static Map<Locale, Object> _symbols = new HashMap<Locale, Object>(8);
+	private int _numOfMonths = 1;
 	
 	static {
 		addClientEvent(Datebox.class, "onTimeZoneChange", CE_IMPORTANT|CE_DUPLICATE_IGNORE);
@@ -499,6 +500,31 @@ the short time styling.
 		}
 	}
 	
+	/**
+	 * Returns the number of months that show in drop down calendar.
+	 * <p>
+	 * Default: 1.
+	 * @return int
+	 */
+	public int getNumberOfMonths() {
+		return _numOfMonths;
+	}
+	
+	/**
+	 * Sets number of months to show in drop down calendar.
+	 * @param numOfMonths
+	 * @since 6.5.0
+	 */
+	public void setNumberOfMonths(int numOfMonths) throws WrongValueException {
+		if (numOfMonths < 1)
+			throw new WrongValueException("Number of months must large than 1: " + numOfMonths);
+		
+		if (_numOfMonths != numOfMonths) {
+			_numOfMonths = numOfMonths;
+			smartUpdate("numberOfMonths", _numOfMonths);
+		}
+	}
+	
 	private static Map loadSymbols(Locale locale) {
 		WaitLock lock = null;
 		for (;;) {
@@ -854,5 +880,8 @@ the short time styling.
 
 		if (_locale != null)
 			renderer.render("localizedSymbols", getRealSymbols(_locale, this));
+		
+		if (_numOfMonths != 1)
+			renderer.render("numberOfMonths", _numOfMonths);
 	}
 }

@@ -6,7 +6,7 @@
 	font-family: ${fontFamilyC};
 	font-size: ${fontSizeM};
 	font-weight: normal;
-	width: 215px;
+	<%-- width: 215px; --%>
 	padding: 2px;
 }
 .z-calendar,
