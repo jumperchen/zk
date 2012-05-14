@@ -37,20 +37,39 @@ function (out) {
 			  S2MON: zk.S2MON,
 			   FMON: zk.FMON,
 				APM: zk.APM
-		};
-
-	out.push('<div id="', this.uuid, '"', this.domAttrs_(), '><table style="table-layout: fixed" width="100%"', zUtl.cellps0, '>',
+		},
+		parent = this.parent,
+		numOfMonths = parent.$instanceof(zul.db.Datebox) ? parent.getNumberOfMonths() : 1;
+	
+	out.push('<div ', this.domAttrs_(), '><table style="table-layout: fixed" width="', 215*numOfMonths, 'px"', zUtl.cellps0, '>',
 			'<tr><td id="', uuid, '-tdl" class="', zcls, '-tdl');
 	
 	if (view == 'decade' && ydec*100 == 1900)
 		out.push(' ', zcls, '-icon-disd');
 		
-	out.push('"><div  class="', zcls, '-left"><div id="', uuid, '-ly" class="', zcls, '-left-icon"></div></div></td>',
-				'<td><table class="', zcls, '-calctrl" width="100%" border="0" cellspacing="0" cellpadding="0">',
+	out.push('"><div class="', zcls, '-left"><div id="', uuid, '-ly" class="', zcls, '-left-icon"></div></div></td>');
+	
+	var isMultiMonth = numOfMonths > 1 && view == 'day';
+	if (!isMultiMonth)
+		out.push('<td><table class="', zcls, '-calctrl" width="100%" border="0" cellspacing="0" cellpadding="0">',
 				'<tr><td id="', uuid, '-title" class="', zcls, '-title">');
+	
 	switch(view) {
 	case "day" :
-		out.push('<span id="', uuid, '-tm" class="', zcls, '-ctrler">', localizedSymbols.SMON[m], '</span> <span id="', uuid, '-ty" class="', zcls, '-ctrler">', y + ydelta, '</span>');
+		if (numOfMonths > 1) {
+			for (var i = 0; i < numOfMonths; ++i) {
+				var curMon = m + i,
+					isNext = curMon < 12,
+					month = isNext ? curMon : curMon - 12,
+					year = isNext ? y + ydelta : y + ydelta + 1;
+				out.push('<td><table class="', zcls, '-calctrl" width="100%" border="0" cellspacing="0" cellpadding="0">',
+						'<tr><td id="', uuid, '-title" class="', zcls, '-title">',
+						'<span id="', uuid, '-tm" class="', zcls, '-ctrler">', localizedSymbols.SMON[month], '</span> <span id="', uuid, '-ty" class="', zcls, '-ctrler">', year, '</span>',
+						'</td></tr></table></td>');
+			}
+		} else {
+			out.push('<span id="', uuid, '-tm" class="', zcls, '-ctrler">', localizedSymbols.SMON[m], '</span> <span id="', uuid, '-ty" class="', zcls, '-ctrler">', y + ydelta, '</span>');
+		}
 		break;
 	case "month" :
 		out.push('<span id="', uuid, '-tm" class="', zcls, '-ctrler">', localizedSymbols.SMON[m], '</span> <span id="', uuid, '-ty" class="', zcls, '-ctrler">', y + ydelta, '</span>');
@@ -62,7 +81,7 @@ function (out) {
 		out.push('<span id="', uuid, '-tyd" class="', zcls, '-ctrler">', ydec*100 + ydelta, '-', ydec*100 + ydelta+ 99, '</span>');
 		break;
 	}
-	out.push('</td></tr></table></td>',
+	out.push(isMultiMonth ? '' : '</td></tr></table></td>',
 		'<td id="', uuid, '-tdr" class="', zcls, '-tdr');
 		
 	if (view == 'decade' && ydec*100 == 2000)
@@ -72,19 +91,39 @@ function (out) {
 	//year view
 	switch(view) {
 	case "day" :
-		out.push('<tr><td colspan="3"><table id="', uuid, '-mid" class="', zcls, '-calday" width="100%" border="0" cellspacing="0" cellpadding="0">',
-				'<tr class="', zcls, '-caldow">');
-			var sun = (7 - localizedSymbols.DOW_1ST) % 7, sat = (6 + sun) % 7;
-			for (var j = 0 ; j < 7; ++j)
-				out.push('<td class="', zcls, (j == sun || j == sat) ? '-wkend' : '-wkday', 
-						'">' + localizedSymbols.S2DOW[j] + '</td>');
-			out.push('</tr>');
-			for (var j = 0; j < 6; ++j) { //at most 7 rows
-				out.push('<tr class="', zcls, '-caldayrow" id="', uuid, '-w', j, '" >');
-				for (var k = 0; k < 7; ++k)
-					out.push ('<td class="', zcls, (k == sun || k == sat) ? '-wkend' : '-wkday', '"></td>');
-				out.push('</tr>');
+		if (numOfMonths > 1) {
+			out.push('<tr>');
+			for (var i = 0; i < numOfMonths; ++i) {
+				out.push('<td colspan="', i == 0 || i == numOfMonths-1 ? 2 : 1,'" style="vertical-align: top; padding-right: 5px;"><table id="', uuid, '-mid', i,'" class="', zcls, '-calday" width="100%" border="0" cellspacing="0" cellpadding="0">',
+						'<tr class="', zcls, '-caldow">');
+					var sun = (7 - localizedSymbols.DOW_1ST) % 7, sat = (6 + sun) % 7;
+					for (var j = 0 ; j < 7; ++j)
+						out.push('<td class="', zcls, (j == sun || j == sat) ? '-wkend' : '-wkday', 
+								'">' + localizedSymbols.S2DOW[j] + '</td>');
+					out.push('</tr>');
+					for (var j = 0; j < 6; ++j) { //at most 7 rows
+						out.push('<tr class="', zcls, '-caldayrow" id="', uuid, '-w', i, j, '" >');
+						for (var k = 0; k < 7; ++k)
+							out.push ('<td class="', zcls, (k == sun || k == sat) ? '-wkend' : '-wkday', '"></td>');
+						out.push('</tr>');
+					}
+				out.push('</table><', tagnm, ' id="', uuid, '-a', i,'" tabindex="-1" onclick="return false;" href="javascript:;" class="z-focus-a"></', tagnm,'></td>');
 			}
+		} else {
+			out.push('<tr><td colspan="3"><table id="', uuid, '-mid" class="', zcls, '-calday" width="100%" border="0" cellspacing="0" cellpadding="0">',
+					'<tr class="', zcls, '-caldow">');
+				var sun = (7 - localizedSymbols.DOW_1ST) % 7, sat = (6 + sun) % 7;
+				for (var j = 0 ; j < 7; ++j)
+					out.push('<td class="', zcls, (j == sun || j == sat) ? '-wkend' : '-wkday', 
+							'">' + localizedSymbols.S2DOW[j] + '</td>');
+				out.push('</tr>');
+				for (var j = 0; j < 6; ++j) { //at most 7 rows
+					out.push('<tr class="', zcls, '-caldayrow" id="', uuid, '-w', j, '" >');
+					for (var k = 0; k < 7; ++k)
+						out.push ('<td class="', zcls, (k == sun || k == sat) ? '-wkend' : '-wkday', '"></td>');
+					out.push('</tr>');
+				}
+		}
 		break;
 	case "month" :
 		out.push('<tr><td colspan="3" ><table id="', uuid, '-mid" class="', zcls, '-calmon" width="100%" border="0" cellspacing="0" cellpadding="0">');
@@ -122,7 +161,11 @@ function (out) {
 		}
 		break;
 	}
-	out.push('</table><', tagnm, ' id="', uuid,
-		'-a" tabindex="-1" onclick="return false;" href="javascript:;" class="z-focus-a"></',
-		tagnm, '></td></tr></table></div>');
+	if (numOfMonths > 1) {
+		out.push('</tr></table></div>');
+	} else {
+		out.push('</table><', tagnm, ' id="', uuid,
+				'-a" tabindex="-1" onclick="return false;" href="javascript:;" class="z-focus-a"></',
+				tagnm, '></td></tr></table></div>');
+	}
 }

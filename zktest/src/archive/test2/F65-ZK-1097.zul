@@ -1,0 +1,20 @@
+<!--
+	F65-ZK-1097.zul
+	
+	Purpose:
+	
+	Description:
+	
+	History:
+		Mon May 14 09:07:06 TST 2012, Created by vincent
+	
+	Copyright (C) 2012 Potix Corporation. All Rights Reserved.
+-->
+<zk>
+	<div>
+		1. Click on calendar button. You should see three months.
+	</div>
+	<window title="Hello World!!" border="normal" width="500px">
+		<datebox numberOfMonths="3" format="yyyy/MM/dd HH:mm" width="200px" />
+	</window>
+</zk>
