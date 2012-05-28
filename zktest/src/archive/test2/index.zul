@@ -158,7 +158,7 @@ if (lb.getSelectedItem() != null) {
 	</west>
 	<center id="center" title="ZK TEST2" autoscroll="true">
 		<!-- ******************** View Panel ******************** -->
-		<iframe id="ifr" height="98%" width="100%" autohide="true"/>
+		<iframe id="ifr" hflex="true" vflex="true" autohide="true"/>
 	</center>
 	<south id="leftPanel" title="Code View" collapsible="true" maxsize="600"
 		splittable="true" open="false" size="300px">
