@@ -13,7 +13,7 @@ This program is distributed under LGPL Version 2.1 in the hope that
 it will be useful, but WITHOUT ANY WARRANTY.
 */
 (function () {
-	
+	/*
 	function _setFirstChildFlex (wgt, flex, ignoreMin) {
 		var cwgt = wgt.firstChild;
 		if(cwgt) {
@@ -32,7 +32,7 @@ it will be useful, but WITHOUT ANY WARRANTY.
 			}
 		}
 	}
-	
+	*/
 /**
  * A layout region in a border layout.
  * <p>
@@ -65,8 +65,9 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 		 * @return boolean
 		 */
 		flex: function (v) {
+			/* bug ZK-1158: onSize is calculated twice when borderlayout's region with "flex=true"
 			_setFirstChildFlex(this, v);
-			this.rerender();
+			this.rerender();*/
 		},
 		/**
 		 * Sets the border (either none or normal).
@@ -174,8 +175,9 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 		autoscroll: function (autoscroll) {
 			var cave = this.$n('cave');
 			if (cave) {
-				var bodyEl = this.isFlex() && this.firstChild ?
-						this.firstChild.$n() : cave;
+				var fchild = this.firstChild,
+					bodyEl = fchild && fchild.getHflex() && fchild.getVflex() ?
+						fchild.$n() : cave;
 				if (autoscroll) {
 					bodyEl.style.overflow = "auto";
 					bodyEl.style.position = "relative";
@@ -437,13 +439,14 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 	onChildAdded_: function (child) {
 		this.$supers('onChildAdded_', arguments);
 		if (child.$instanceof(zul.layout.Borderlayout)) {
-			this.setFlex(true);
+			// this.setFlex(true);
 			jq(this.$n()).addClass(this.getZclass() + "-nested");
 		}
 		
 		// Bug for B36-2841185.zul, resync flex="true"
+		/*
 		if (this.isFlex())
-			_setFirstChildFlex(this, true, true);
+			_setFirstChildFlex(this, true, true);*/
 		
 		// reset
 		(this.$n('real') || {})._lastSize = null;
@@ -454,11 +457,11 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 		this.$supers('onChildRemoved_', arguments);
 		
 		// check before "if (child.$instanceof(zul.layout.Borderlayout)) {"
-		if (this.isFlex())
-			_setFirstChildFlex(this, false);
+		/*if (this.isFlex())
+			_setFirstChildFlex(this, false);*/
 				
 		if (child.$instanceof(zul.layout.Borderlayout)) {
-			this.setFlex(false);
+			// this.setFlex(false);
 			jq(this.$n()).removeClass(this.getZclass() + "-nested");
 		}
 		
@@ -517,18 +520,20 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 		if (this._open && !this.isVisible()) n.style.display = "none";
 		
 		if (this.isAutoscroll()) {
-			var bodyEl = this.isFlex() && this.firstChild ?
-					this.firstChild.$n() : this.$n('cave');
+			var fchild = this.firstChild,
+				bodyEl = fchild && fchild.getHflex() && fchild.getVflex() ?
+					fchild.$n() : this.$n('cave');
 			this.domListen_(bodyEl, "onScroll");
 		}
 		
-		if (this.isFlex())
-			_setFirstChildFlex(this, true, true);
+		/*if (this.isFlex())
+			_setFirstChildFlex(this, true, true);*/
 	},
 	unbind_: function () {
 		if (this.isAutoscroll()) {
-			var bodyEl = this.isFlex() && this.firstChild ?
-					this.firstChild.$n() : this.$n('cave');
+			var fchild = this.firstChild,
+				bodyEl = fchild && fchild.getHflex() && fchild.getVflex() ?
+					fchild.$n() : this.$n('cave');
 			this.domUnlisten_(bodyEl, "onScroll");
 		}
 		if (this.$n('split')) {			
@@ -538,8 +543,8 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 			}
 		}
 		
-		if (this.isFlex())
-			_setFirstChildFlex(this, false);
+		/*if (this.isFlex())
+			_setFirstChildFlex(this, false);*/
 		
 		this.$supers(zul.layout.LayoutRegion, 'unbind_', arguments);
 	},

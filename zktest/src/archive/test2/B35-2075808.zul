@@ -59,22 +59,21 @@ import org.zkoss.zkmax.zul.Columnchildren;
 							splittable="true" collapsible="true">
 							<borderlayout>
 								<west size="25%" border="none"
-									flex="true" maxsize="250" splittable="true"
+									maxsize="250" splittable="true"
 									collapsible="true">
-									<div style="background:#B8D335">
+									<div style="background:#B8D335" hflex="true" vflex="true">
 										<label value="25%"
 											style="color:white;font-size:30px" />
 									</div>
 								</west>
-								<center border="none" flex="true">
-									<div style="background:#E6D92C">
+								<center border="none">
+									<div style="background:#E6D92C" hflex="true" vflex="true">
 										<label value="25%"
 											style="color:white;font-size:30px" />
 									</div>
 								</center>
-								<east size="50%" border="none"
-									flex="true">
-									<label value="Here is a non-border"
+								<east size="50%" border="none">
+									<label value="Here is a non-border" hflex="true" vflex="true"
 										style="color:gray;font-size:30px" />
 								</east>
 							</borderlayout>
