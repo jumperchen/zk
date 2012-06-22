@@ -1,0 +1,76 @@
+<?page title="new page title" contentType="text/html;charset=UTF-8"?>
+<zk>
+
+  <html>
+  <![CDATA[
+    <ol>
+      <li>You should see two listboxes, and the left listbox initially is populated with data "1"~"4".</li>
+      <li>Two buttons between the listboxes are used to move data from left to right and vice versa.</li>
+      <li>You should be able to select the data to move in any order without causing exceptions.</li>
+    </ol>
+  ]]>
+  </html>
+  
+  <zscript>
+  <![CDATA[
+    import org.zkoss.zul.ext.*;
+    ListModelList list1 = new ListModelList();
+    list1.add("1");
+    list1.add("2");
+    list1.add("3");
+    list1.add("4");
+    list1.setMultiple(true);
+    
+    ListModelList list2 = new ListModelList();
+    list2.setMultiple(true);
+  ]]></zscript>
+  
+  <hlayout>
+    <listbox 
+      id="listbox1" 
+      model="${list1}"
+      width="200px" 
+      multiple="true" 
+      checkmark="true" >
+      <template name="model">
+        <listitem>
+          <listcell label="${each}" />
+        </listitem>
+      </template>
+    </listbox>
+    
+    <vlayout>
+      <button label="&lt;-" >
+        <attribute name="onClick">
+        <![CDATA[
+          Set selectedItems = ((Selectable) listbox2.getModel()).getSelection();
+          ((ListModelList)listbox1.getModel()).addAll(selectedItems);
+          ((ListModelList)listbox2.getModel()).removeAll(selectedItems);
+        ]]>
+        </attribute>  
+      </button>
+      <button label="- &gt;" >
+        <attribute name="onClick">
+        <![CDATA[
+          Set selectedItems = ((Selectable) listbox1.getModel()).getSelection();
+          ((ListModelList)listbox2.getModel()).addAll(selectedItems);
+          ((ListModelList)listbox1.getModel()).removeAll(selectedItems);
+        ]]>
+        </attribute>    
+      </button>
+    </vlayout>
+    
+    <listbox 
+      id="listbox2" 
+      model="${list2}"  
+      width="200px" 
+      multiple="true" 
+      checkmark="true" >
+      <template name="model">
+        <listitem>
+          <listcell label="${each}" />
+        </listitem>
+      </template>
+    </listbox>
+  </hlayout>
+</zk>

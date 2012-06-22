@@ -321,7 +321,10 @@ implements Sortable<E>, List<E>, java.io.Serializable {
 	}
 	
 	public boolean removeAll(Collection<?> c) {
-		if (_list == c || this == c) { //special case
+	    // B60-ZK-1126.zul
+		// Need to clear selection when removing all elements
+
+		if (_list.containsAll(c) && c.containsAll(_list)) { //special case  
 			clearSelection();
 			clear();
 			return true;
