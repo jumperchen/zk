@@ -323,8 +323,8 @@ implements Sortable<E>, List<E>, java.io.Serializable {
 	public boolean removeAll(Collection<?> c) {
 	    // B60-ZK-1126.zul
 		// Need to clear selection when removing all elements
-
-		if (_list.containsAll(c) && c.containsAll(_list)) { //special case  
+		if (_list == c || this == c || //special case
+			(_list.containsAll(c) && c.containsAll(_list))) {  
 			clearSelection();
 			clear();
 			return true;
@@ -333,7 +333,10 @@ implements Sortable<E>, List<E>, java.io.Serializable {
 	}
 
 	public boolean retainAll(Collection<?> c) {
-		if (_list == c || this == c) { //special case
+	    // B60-ZK-1126.zul
+		// Must also consider equality by membership
+		if (_list == c || this == c || //special case
+			(_list.containsAll(c) && c.containsAll(_list))) {
 			return false;
 		}
 		return removePartial(c, false);

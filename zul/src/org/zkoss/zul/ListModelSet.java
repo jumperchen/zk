@@ -289,7 +289,10 @@ implements Sortable<E>, Set<E>, java.io.Serializable {
 	}
 	
 	public boolean removeAll(Collection<?> c) {
-		if (_set == c || this == c) { //special case
+		// B60-ZK-1202.zul
+		// Must also consider equality by membership
+		if (_set == c || this == c || //special case
+			(_set.containsAll(c) && c.containsAll(_set))) {
 			clear();
 			return true;
 		}

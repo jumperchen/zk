@@ -442,7 +442,10 @@ implements Sortable<Map.Entry<K, V>>, Map<K, V>, java.io.Serializable {
 		abstract protected int indexOf(Object o);
 		
 		public boolean removeAll(Collection<?> c) {
-			if (_set == c || this == c) { //special case
+			// B60-ZK-1202.zul
+			// Must also consider equality by membership
+			if (_set == c || this == c || //special case
+				(_set.containsAll(c) && c.containsAll(_set))) {
 				clear();
 				return true;
 			}
@@ -658,7 +661,10 @@ implements Sortable<Map.Entry<K, V>>, Map<K, V>, java.io.Serializable {
 		}
 
 		public boolean removeAll(Collection<?> c) {
-			if (_col == c || this == c) { //special case
+			// B60-ZK-1126.zul
+			// Must also consider equality by membership
+			if (_col == c || this == c || //special case
+				(_col.containsAll(c) && c.containsAll(_col))) {
 				clearSelection();
 				clear();
 				return true;
