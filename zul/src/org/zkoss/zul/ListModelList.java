@@ -321,22 +321,18 @@ implements Sortable<E>, List<E>, java.io.Serializable {
 	}
 	
 	public boolean removeAll(Collection<?> c) {
-	    // B60-ZK-1126.zul
-		// Need to clear selection when removing all elements
-		if (_list == c || this == c || //special case
-			(_list.containsAll(c) && c.containsAll(_list))) {  
+		if (_list == c || this == c) { // sepcial case
 			clearSelection();
 			clear();
 			return true;
 		}
+	    // B60-ZK-1126.zul
+		// Remove all items may cause IndexOutOfBoundsException
 		return removePartial(c, true);
 	}
 
 	public boolean retainAll(Collection<?> c) {
-	    // B60-ZK-1126.zul
-		// Must also consider equality by membership
-		if (_list == c || this == c || //special case
-			(_list.containsAll(c) && c.containsAll(_list))) {
+		if (_list == c || this == c) { //special case
 			return false;
 		}
 		return removePartial(c, false);
@@ -346,6 +342,9 @@ implements Sortable<E>, List<E>, java.io.Serializable {
 		boolean removed = false;
 		int index = 0;
 		int begin = -1;
+		// B60-ZK-1126.zul
+		// Remember the selections to be cleared
+		List selected = new ArrayList();
 		for(final Iterator<E> it = _list.iterator(); it.hasNext(); ++index) {
 			E item = it.next();
 			if (c.contains(item) == exclude) {
@@ -353,8 +352,12 @@ implements Sortable<E>, List<E>, java.io.Serializable {
 					begin = index;
 				}
 				removed = true;
-				removeFromSelection(item);
 				it.remove();
+				// B60-ZK-1126.zul
+				// Removed item has been selected; remember and remove the selection later
+				if (_selection.contains(item)) {
+					selected.add(item);
+				}
 			} else {
 				if (begin >= 0) {
 					fireEvent(ListDataEvent.INTERVAL_REMOVED, begin, index - 1);
@@ -362,6 +365,11 @@ implements Sortable<E>, List<E>, java.io.Serializable {
 					begin = -1;
 				}
 			}
+		}
+		// B60-ZK-1126.zul
+		// Clear the selected items that were removed
+		if (!selected.isEmpty()) {
+			removeAllSelection(selected);
 		}
 		if (begin >= 0) {
 			fireEvent(ListDataEvent.INTERVAL_REMOVED, begin, index - 1);
