@@ -295,6 +295,8 @@ implements Sortable<E>, Set<E>, java.io.Serializable {
 		}
 		//bug #1819318 Problem while using SortedSet with Databinding
 		if (_set instanceof LinkedHashSet || _set instanceof SortedSet) {
+			// B60-ZK-1126.zul
+			// Remove all items may cause exception
 			return removePartial(c, true);
 		} else { //bug #1839634 Problem while using HashSet with Databinding
 			removeAllSelection(c);
@@ -329,6 +331,9 @@ implements Sortable<E>, Set<E>, java.io.Serializable {
 		int retained = 0;
 		int index = 0;
 		int begin = -1;
+		// B60-ZK-1126.zul
+		// Remember the selections to be cleared
+		List selected = new ArrayList();
 		for(final Iterator<E> it = _set.iterator(); 
 			it.hasNext() && (!isRemove || removed < sz) && (isRemove || retained < sz); ++index) {
 			Object item = it.next();
@@ -337,8 +342,12 @@ implements Sortable<E>, Set<E>, java.io.Serializable {
 					begin = index;
 				}
 				++removed;
-				removeFromSelection(item);
 				it.remove();
+				// B60-ZK-1126.zul
+				// Removed item has been selected; remember and remove the selection later
+				if (_selection.contains(item)) {
+					selected.add(item);
+				}
 			} else {
 				++retained;
 				if (begin >= 0) {
@@ -347,6 +356,11 @@ implements Sortable<E>, Set<E>, java.io.Serializable {
 					begin = -1;
 				}
 			}
+		}
+		// B60-ZK-1126.zul
+		// Clear the selected items that were removed
+		if (!selected.isEmpty()) {
+			removeAllSelection(selected);
 		}
 		if (begin >= 0) {
 			fireEvent(ListDataEvent.INTERVAL_REMOVED, begin, index - 1);
