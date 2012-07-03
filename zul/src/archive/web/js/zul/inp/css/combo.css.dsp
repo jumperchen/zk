@@ -860,6 +860,7 @@ i.z-spinner-btn, i.z-doublespinner-btn {<%-- button at the right edge --%>
 </c:if>
 
 <%-- Timebox wheel --%>
+<c:if test="${zk.mobile > 0}">
 .z-timebox-wheel-time {
 	float: left;
 	margin: 4px 2px;
@@ -918,3 +919,4 @@ li.z-timebox-wheel-list-seld {
 	opacity: 1;
 	filter: Alpha(Opacity=100);
 }
+</c:if>

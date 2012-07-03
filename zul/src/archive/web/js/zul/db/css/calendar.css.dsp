@@ -186,6 +186,7 @@ td.z-calendar-wkend {
 }
 
 <%-- Calendar and Timebox wheel --%>
+<c:if test="${zk.mobile > 0}">
 .z-calendar-wheel-cave {
 	position: relative;
 }
@@ -279,6 +280,7 @@ li.z-calendar-wheel-list-seld {
 .z-calendar-wheel-right {
 	float: right;
 }
+</c:if>
 
 <%-- Issues --%>
 <%-- 3159648 --%>
