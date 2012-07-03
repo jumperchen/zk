@@ -697,10 +697,8 @@ zul.db.CalendarPop = zk.$extends(zul.db.Calendar, {
 		if (fmt) {
 			var tm = db._tm,
 				time = tm.getValue();
-			console.log(time);
 			date.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
 		}
-		console.log(date);
 		db.getInputNode().value = db.coerceToString_(date);
 
 		if (this._view == 'day' && evt.data.shallClose !== false) {
