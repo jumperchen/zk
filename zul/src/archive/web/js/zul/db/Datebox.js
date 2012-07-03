@@ -617,7 +617,6 @@ zul.db.CalendarPop = zk.$extends(zul.db.Calendar, {
 		var topZIndex = this.setTopmost();
 		this._setView("day");
 		var zcls = db.getZclass();
-
 		pp.className = dbn.className + " " + pp.className;
 		jq(pp).removeClass(zcls);
 
@@ -700,7 +699,6 @@ zul.db.CalendarPop = zk.$extends(zul.db.Calendar, {
 				time = tm.getValue();
 			date.setHours(time.getHours(), time.getMinutes(), time.getSeconds(), time.getMilliseconds());
 		}
-		
 		db.getInputNode().value = db.coerceToString_(date);
 
 		if (this._view == 'day' && evt.data.shallClose !== false) {
