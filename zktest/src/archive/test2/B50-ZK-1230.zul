@@ -14,12 +14,18 @@
     </attribute>
   </button>
   <tabbox id="pages" hflex="1" vflex="1">
-    <tabs height="0px">
-      <tab />
-      <tab />
+    <tabs height="50px">
+      <tab label="instruction"/>
+      <tab label="result" />
     </tabs>
     <tabpanels>
-      <tabpanel></tabpanel>
+      <tabpanel>
+        <listbox>
+          <listitem><listcell>1. Click on 'showPage' button.</listcell></listitem>
+          <listitem><listcell>2. You should see in the 'result' tab, a list of 2 items: "trackName 0" and "trackName 1".</listcell></listitem>
+          <listitem><listcell>3. If not, that's an error.</listcell></listitem>
+        </listbox>
+      </tabpanel>
       <tabpanel>
         <listbox id="drillList" height="500px" />
       </tabpanel>
