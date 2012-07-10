@@ -90,6 +90,7 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 			top = node.style.top,
 			$n = jq(node);
 		
+		
 		// the top is depend on children's height, if child will re-size after onSize/onShow, 
 		// popup need to re-position top after children height has calculated.
 		// B50-ZK-391
