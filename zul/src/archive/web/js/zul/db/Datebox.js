@@ -63,6 +63,7 @@ var globallocalizedSymbols = {},
 zul.db.Datebox = zk.$extends(zul.inp.FormatWidget, {
 	_buttonVisible: true,
 	_lenient: true,
+	_numberOfMonths: 1,
 	$init: function() {
 		this.$supers('$init', arguments);
 		this.afterInit(_initPopup);
@@ -268,7 +269,20 @@ zul.db.Datebox = zk.$extends(zul.inp.FormatWidget, {
 				if (this._pop)
 					this._pop.setLocalizedSymbols(this._localizedSymbols);
 			}
-		]
+		],
+		/**
+		 * Sets number of months to show in drop down calendar.
+		 * @param int numberOfMonths
+		 * @since 6.5.0
+		 */
+		/**
+		 * Returns the number of months that show in drop down calendar.
+		 * <p>
+		 * Default: 1.
+		 * @return int
+		 * @since 6.5.0
+		 */
+		numberOfMonths: null
 	},
 	_setTimeZonesIndex: function () {
 		var select = this.$n('dtzones');
