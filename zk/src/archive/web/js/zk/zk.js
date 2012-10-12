@@ -108,9 +108,16 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		_showprgb();
 	}
 	function _showprgb(mask, icon) {
+		var $jq;
 		if (zk.processing
-		&& !jq("#zk_proc").length && !jq("#zk_showBusy").length)
+		&& !($jq = jq("#zk_proc")).length && !jq("#zk_showBusy").length) {
 			zUtl.progressbox("zk_proc", window.msgzk?msgzk.PLEASE_WAIT:'Processing...', mask, icon);
+		} else if (icon == 'z-initing') {
+			var $jq = $jq || jq("#zk_proc");
+			if ($jq.length && $jq.hasClass('z-loading') && ($jq = $jq.parent()).hasClass('z-temp')) {
+				$jq.append('<div class="z-initing"></div>');
+			}
+		}
 	}
 	function wgt2s(w) {
 		var s = w.widgetName;
@@ -677,7 +684,8 @@ foo.Widget = zk.$extends(zk.Widget, {
 		if (!superclass)
 			throw 'unknown superclass';
 
-		var superpt = superclass.prototype,
+		var fe = !(zk.feature && zk.feature.ee),
+			superpt = superclass.prototype,
 			jclass = newClass(function () {
 				if (superclass.$copyf && !superclass.$copied) {
 					superclass.$copyf();
@@ -686,21 +694,34 @@ foo.Widget = zk.$extends(zk.Widget, {
 				var define = members['$define'],
 					superpt = superclass.prototype,
 					thispt = jclass.prototype;
-
-				delete members['$define'];
-				for (var p in superpt) //inherit non-static
-					if ('|_$super|_$subs|className|$class|_$extds|superclass|widgetName|'.indexOf('|'+p+'|') < 0)
-						thispt[p] = superpt[p];
+				
+				if (define)	delete members['$define'];
+				
+				var zf = zk.feature;
+				if (!(zf && zf.ee)) {
+					for (var p in superpt) {//inherit non-static
+						var $p = '|'+p+'|';
+						if ('|_$super|_$subs|$class|_$extds|superclass|className|widgetName|blankPreserved|'.indexOf($p) < 0) {
+							thispt[p] = superpt[p];	
+						} else if (thispt[p] == undefined && '|className|widgetName|blankPreserved|'.indexOf($p) >= 0) {
+							thispt[p] = superpt[p]; // have to inherit from its parent.
+						}
+					}
+				}
 				
 				zk.define(jclass, define);
 				zk.copy(thispt, members);
 			}),
 			thispt = jclass.prototype;
 		
-		var zf;
-		if (!(zf = zk.feature) || !zf.ee) {
+		if (fe) {
 			jclass.$copyf();
 			jclass.$copied = true;
+		} else {
+			function _init() { this.constructor = jclass; };
+		    _init.prototype = superclass.prototype;
+		    jclass.prototype = new _init();
+			thispt = jclass.prototype;
 		}
 		
 		for (var p in superclass) //inherit static
@@ -807,15 +828,17 @@ zk.override(zul.inp.Combobox.prototype, _xCombobox, {
 	 * @see #override(Object, Map, Map)
 	 */
 	override: function (dst, backup, src) {
-		if (dst.$class && dst.$class.$copied === false) {
-			var f = dst.$class.$copyf;
-			dst.$class.$copyf = function () {
+		var $class = dst.$class;
+		if ($class && $class.$copied === false) {
+			var f = $class.$copyf;
+			$class.$copyf = function () {
 				f();
+				$class.$copied = true;
 				zk.override(dst, backup, src);
 			};
 			return dst;
 		}
-		
+		var fe = !(zk.feature && zk.feature.ee);
 		switch (typeof backup) {
 		case "function":
 			var old = dst;
@@ -823,11 +846,23 @@ zk.override(zul.inp.Combobox.prototype, _xCombobox, {
 			return old;
 		case "string":
 			// B50-ZK-493: shall update subclasses
-			_overrideSub(dst, backup, dst['$'+backup] = dst[backup], dst[backup] = src, true);
+			if (fe)
+				_overrideSub(dst, backup, dst['$'+backup] = dst[backup], dst[backup] = src, true);
+			else {
+				dst['$'+backup] = dst[backup];
+				dst[backup] = src;
+			}
 			return dst;
 		}
-		for (var nm in src)
-			_overrideSub(dst, nm, backup[nm] = dst[nm], dst[nm] = src[nm]);
+		if (fe) {
+			for (var nm in src)
+				_overrideSub(dst, nm, backup[nm] = dst[nm], dst[nm] = src[nm]);
+		} else {
+			for (var nm in src) {
+				backup[nm] = dst[nm];
+				dst[nm] = src[nm];
+			}
+		}
 		return dst;
 	},
 

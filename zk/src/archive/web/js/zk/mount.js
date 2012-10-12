@@ -36,7 +36,8 @@ function zkver(ver, build, ctxURI, updURI, modVers, opts) {
 	for (var nm in modVers)
 		zk.setVersion(nm, modVers[nm]);
 
-	zk.feature = {standard: true};
+	if (!zk.feature)
+		zk.feature = {standard: true};
 	zkopt(opts);
 }
 
@@ -214,8 +215,17 @@ function zkamn(pkg, fn) {
 			var wgt = inf[1];
 			if (inf[2])
 				wgt.bind(inf[0]); //bindOnly
-			else
+			else {
+				var $jq;
+				if (zk.processing
+						&& ($jq = jq("#zk_proc")).length) {
+					if ($jq.hasClass('z-loading') && $jq.parent().hasClass('z-temp')) {
+						$jq[0].id = 'zna';
+						zUtl.progressbox("zk_proc", window.msgzk?msgzk.PLEASE_WAIT:'Processing...', true);
+					}
+				}
 				wgt.replaceHTML('#' + wgt.uuid, inf[0]);
+			}
 
 			doAuCmds(inf[3]); //aucmds
 		}
@@ -230,14 +240,7 @@ function zkamn(pkg, fn) {
 		zk.mounting = false;
 		doAfterMount(mtBL1);
 		_paci && ++_paci.s;
-		if (zk.mobile) {
-			setTimeout(function () {
-			// close it when no ClientInfo event registered,
-			// otherwise the onResponse event will take care that.
-			if (!zAu._cInfoReg)
-				zk.endProcessing();
-			}, 500);
-		} else {
+		if (!zk.clientinfo) {// if existed, the endProcessing() will be invoked after onResponse()
 			zk.endProcessing();
 		}
 
@@ -398,10 +401,23 @@ function zkamn(pkg, fn) {
 
 			if (wi) {
 				if (wi[0] === 0) { //page
-					var props = wi[2];
-					zkdt(zk.cut(props, "dt"), zk.cut(props, "cu"), zk.cut(props, "uu"), zk.cut(props, "ru"));
+					var props = wi[2],
+						dt = zkdt(zk.cut(props, "dt"), zk.cut(props, "cu"), zk.cut(props, "uu"), zk.cut(props, "ru"));
 					if (owner = zk.cut(props, "ow"))
 						owner = Widget.$(owner);
+					var zf;
+					if ((zf = zk.feature) && (zf.pe || zf.ee) && zk.clientinfo !== undefined) {
+						zAu.cmd0.clientInfo(dt.uuid);
+						if (extra) {
+							var newExtra = [];
+							for (var j = 0; j < extra.length; j += 2) {
+								if (extra[j] != 'clientInfo')
+									newExtra.push(extra[j], extra[j + 1]);
+							}
+							extra = newExtra;
+						}
+					} else
+						delete zk.clientinfo;
 				}
 
 				infs.push([_curdt(), wi, _mntctx.bindOnly, owner, extra]);

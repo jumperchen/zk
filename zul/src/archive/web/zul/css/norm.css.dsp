@@ -182,7 +182,7 @@ div.z-log button {
 	font-family: ${fontFamilyC};
 	font-size: ${fontSizeM}; font-weight: normal;
 }
-.z-modal-mask {
+.z-temp, .z-modal-mask {
 	width: 100%;
 	height: 100%;
 	position: absolute;
@@ -197,7 +197,10 @@ div.z-log button {
 	position: absolute; right: 10px; bottom: 10px;
 	z-index: 32000;
 	background: transparent no-repeat center;
-	background-image: url('http://www.zkoss.org/zk/img/zkpowered.png?v=${z:getVersion()}&e=${z:getEdition()}&b=${z:getBuild()}');
+	background-image: url('http://www.zkoss.org/zk/img/${z:encodeWithZK("zkpowered.png")}');
+}
+.z-uptime {
+	background-image: url('http://www.zkoss.org/zk/img/${z:encodeWithZK("zkuptime.png")}');
 }
 .z-loading, .z-apply-loading {
 	position: absolute;
@@ -284,7 +287,15 @@ div.z-log button {
 .z-temp * { <%-- temporary --%>
 	color: white; background-color: white; font-size: 5px; text-decoration: none;
 }
-
+.z-temp .z-loading {
+	background-color: #E3E3E3;
+	top: 49%;
+	left: 46%;
+}
+.z-temp .z-loading-indicator {
+	font-size: ${fontSizeM};
+	color: #363636;
+}
 <%-- Fix float issue for CSS --%>
 .z-clear {
 	clear: both;

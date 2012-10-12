@@ -2,6 +2,8 @@
 ZK 6.5.1
 * Features
   ZK-1351: Messagebox with no button
+  ZK-1397: DefaultTreeNode support empty children mean leaf node
+  ZK-1248: Sub menu should not overlap its parent in menupopup
 
 * Bugs
   ZK-1348: First child tree node can't unfold sometimes
@@ -14,6 +16,15 @@ ZK 6.5.1
   ZK-1344: Collection binding will occur error when deleting entry
   ZK-1366: When binding Radio's "selectedItem" with a non-String object, zk throws ClassCastException
   ZK-1358: When I try to show a window with doOverlapped, doModal or doHighlighted my window don't appears
+  ZK-1372: zk.stackUp not work with Firefox
+  ZK-1368: the right edge of the textboxes split over to a new line when you specify a percentage width and set the mold to rounded
+  ZK-1383: The value of Map.Entry returned from ListModelMap.getElementAt() don't support Serializable
+  ZK-1259: zul with hashmap not load key from a fx
+  ZK-1380: Forward uri can't be "zk/*" on Tomcat 7
+  ZK-1381: Show busy on panel with borderlayout is not working
+  ZK-1337: RenderHttpServletRequest/RenderHttpServletResponse's getInstance() cause ServletException when passed to RequestDispather on Liferay 6.1 + JBoss 7.1
+  ZK-1377: Focus lost when tapping & change title value insides a window
+  ZK-1386: Server failed to load scrollview.css.dsp while using zk6.5 ee and setting theme to sapphire
 
 * Upgrade Notes
 
@@ -89,6 +100,9 @@ ZK 6.0.3
 * Features
   ZK-1301: The buttons in the Messagebox shall use autodisable
   ZK-1312: formattedNumber & formattedDate should use proper Locale & Timezone
+  ZK-1397: DefaultTreeNode support empty children mean leaf node
+  ZK-1248: Sub menu should not overlap its parent in menupopup
+  
 * Bugs
   ZK-1128: Use SerializableUiFactory with a portal environment will cause ClassCastException
   ZK-1303: listbox select mold with 1 rows onSelect event not fired for first item
@@ -110,6 +124,14 @@ ZK 6.0.3
   ZK-1358: When I try to show a window with doOverlapped, doModal or doHighlighted my window don't appears
   ZK-1347: Including Checkbox inside MVVM Form causes Error writing 'checked' on type org.zkoss.zul.Checkbox crash
   ZK-1344: Collection binding will occur error when deleting entry
+  ZK-1372: zk.stackUp not work with Firefox
+  ZK-1368: the right edge of the textboxes split over to a new line when you specify a percentage width and set the mold to rounded
+  ZK-1383: The value of Map.Entry returned from ListModelMap.getElementAt() don't support Serializable
+  ZK-1380: Forward uri can't be "zk/*" on Tomcat 7
+  ZK-1259: zul with hashmap not load key from a fx
+  ZK-1381: Show busy on panel with borderlayout is not working
+  ZK-1337: RenderHttpServletRequest/RenderHttpServletResponse's getInstance() cause ServletException when passed to RequestDispather on Liferay 6.1 + JBoss 7.1
+  ZK-1377: Focus lost when tapping & change title value insides a window
 
 * Upgrade Notes
   + The default names of a composer will still be assigned no matter you set a composerName by custom-attributes or not.

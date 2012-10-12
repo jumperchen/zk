@@ -256,6 +256,11 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		}
 	}
 	function _bkRange(wgt) {
+		if (zk.ie && zk.cfrg) { //Bug ZK-1377
+			var cfrg = zk.cfrg;
+			delete zk.cfrg;
+			return cfrg;
+		}
 		return wgt.getInputNode && (wgt = wgt.getInputNode())
 			&& zk(wgt).getSelectionRange();
 	}
@@ -2370,8 +2375,10 @@ function () {
 			this.bind(desktop, skipper);
 		}
 
-		if (!skipper)
+		if (!skipper) {
+			window._onsizet = jq.now();
 			zUtl.fireSized(this);
+		}
 
 		_rsFocus(cfi);
 		return this;
@@ -2398,7 +2405,17 @@ function () {
 	 * @return String the HTML fragment
 	 */
 	redrawHTML_: function (skipper, trim) {
-		var out = [];
+		var out = zk.chrome ? new (function() {
+				var result = "";
+				this.push = function () {
+					for (var i = 0, j = arguments.length; i<j;i++)
+						if (arguments[i]) //skip null or undefined arguments
+							result += arguments[i];
+				};
+				this.join = function () {
+					return result;
+				};
+			}) : [];
 		this.redraw(out, skipper);
 		out = out.join('');
 		return trim ? out.trim(): out;
@@ -2791,8 +2808,15 @@ bind_: function (desktop, skipper, after) {
 					self.fire('onBind');
 			});
 		}
-		this.bindSwipe_();
-		this.bindDoubleTap_();
+		var self = this;
+		if (zk.mobile) {
+			after.push(function (){
+				setTimeout(function () {// lazy init
+					self.bindSwipe_();
+					self.bindDoubleTap_();			
+				}, 300);
+			});
+		}
 	},
 	/** Binds the children of this widget.
 	 * It is called by {@link #bind_} to invoke child's {@link #bind_} one-by-one.
@@ -3592,14 +3616,16 @@ wgt.unlisten({
 	isListen: function (evt, opts) {
 		var v = this._asaps[evt];
 		if (v) return true;
-		if (opts && opts.asapOnly) {
-			v = this.$class._importantEvts;
-			return v && v[evt];
-		}
-		if (opts && opts.any) {
-			if (v != null) return true;
-			v = this.$class._importantEvts;
-			if (v && v[evt] != null) return true;
+		if (opts) {
+			if (opts.asapOnly) {
+				v = this.$class._importantEvts;
+				return v && v[evt];
+			}
+			if (opts.any) {
+				if (v != null) return true;
+				v = this.$class._importantEvts;
+				if (v && v[evt] != null) return true;
+			}
 		}
 
 		var lsns = this._lsns[evt];
@@ -5023,8 +5049,18 @@ Object skip(zk.Widget wgt);
 	skip: function (wgt, skipId) {
 		var skip = jq(skipId || wgt.getCaveNode(), zk)[0];
 		if (skip && skip.firstChild) {
+			var cf = zk.currentFocus,
+				iscf = cf && cf.getInputNode;
+			
+			if (iscf && zk.ie) //Bug ZK-1377 IE will lost input selection range after remove node
+				zk.cfrg = zk(cf.getInputNode()).getSelectionRange();
+			
 			skip.parentNode.removeChild(skip);
 				//don't use jq to remove, since it unlisten events
+			
+			if (iscf && zk.chrome) //Bug ZK-1377 chrome will lost focus target after remove node
+				zk.currentFocus = cf;
+			
 			return skip;
 		}
 	},
