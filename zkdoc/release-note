@@ -32,11 +32,12 @@ ZK 6.0.3
   ZK-1380: Forward uri can't be "zk/*" on Tomcat 7
   ZK-1259: zul with hashmap not load key from a fx
   ZK-1381: Show busy on panel with borderlayout is not working
-  ZK-1398: Set open attribute to the tree templeate is not work
   ZK-1337: RenderHttpServletRequest/RenderHttpServletResponse's getInstance() cause ServletException when passed to RequestDispather on Liferay 6.1 + JBoss 7.1
   ZK-1377: Focus lost when tapping & change title value insides a window
   ZK-1391: When a window is invisible at first, its top (or left) attribute takes no effect even we turn the window to be visible.
   ZK-1400: Focus issue when Listbox in select mold after invalidate
+  ZK-1192: SelectorComposer ConcurrentModificationException in GAE
+  ZK-1424: Treeitem with a lot of childrens takes too long to open
 
 * Upgrade Notes
   + The default names of a composer will still be assigned no matter you set a composerName by custom-attributes or not.
