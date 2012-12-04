@@ -287,7 +287,15 @@ Copyright (C) 2008 Potix Corporation. All Rights Reserved.
 			if (uri) req.send(null);
 			else req.send(reqInf.content);
 
-			if (!reqInf.implicit) zk.startProcessing(zk.procDelay); //wait a moment to avoid annoying
+			if (!reqInf.implicit) {
+				if (!zk.clientinfo) {
+					setTimeout(function () { //Bug ZK-1505: setTimeout to wait checkProgressing()
+						zk.startProcessing(zk.procDelay); //wait a moment to avoid annoying
+					}, 55);
+				} else {
+					zk.startProcessing(zk.procDelay); //wait a moment to avoid annoying
+				}
+			}
 		} catch (e) {
 			//handle error
 			try {
@@ -1071,7 +1079,7 @@ zAu.cmd0 = /*prototype*/ { //no uuid at all
 			visibilityState = document.visibilityState || document[zk.vendor_ + 'VisibilityState'];
 		
 		zAu.send(new zk.Event(zk.Desktop.$(dtid), "onVisibilityChange",
-			{hidden: hidden, visibilityState: visibilityState}, {implicit: true}));
+			{hidden: hidden, visibilityState: visibilityState}, {implicit: true, ignorable: true}));
 	},
 	/** Asks the client to download the resource at the specified URL.
 	 * @param String url the URL to download from
