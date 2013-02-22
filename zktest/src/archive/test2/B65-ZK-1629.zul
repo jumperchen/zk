@@ -1,0 +1,10 @@
+<zk>
+	Click the button, should see upload file picker dialog opened.
+	<window title="win" border="normal" closable="true" width="300px" height="300px">
+		<button upload="true,maxsize=-1" image="http://www.zkoss.org/zkdemo/widgets/input/button/img/ArrowUp-16x16.png" >
+			<attribute name="onUpload"><![CDATA[
+				System.out.println(event);
+			]]></attribute>
+		</button>
+	</window>
+</zk>

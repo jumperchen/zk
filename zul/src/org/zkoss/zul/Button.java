@@ -274,6 +274,8 @@ implements org.zkoss.zk.ui.ext.Disable {
 			onUploadChanged(upload);
 			initAuxInfo().upload = upload;
 			smartUpdate("upload", getUpload());
+			//Bug ZK-1629: pre-load image if upload enabled
+			setAttribute("org.zkoss.zul.image.preload", true);
 		}
 	}
 	/** Called when the upload attribute is modified. */
