@@ -86,10 +86,13 @@ zul.box.Layout = zk.$extends(zk.Widget, {
 			this.syncSize();
 	},
 	//Bug ZK-1579: should resize if child's visible state changed.
-	onChildVisible_: function () {
+	onChildVisible_: function (child) {
 		this.$supers('onChildVisible_', arguments);
-		if (this.desktop) 
+		if (this.desktop) {
 			this._shallSize = true;
+			//Bug ZK-1650: change chdex display style according to child widget
+			child.$n('chdex').style.display = child.isVisible() ? '' : 'none';
+		}
 	},
 	onChildAdded_: function () {
 		this.$supers('onChildAdded_', arguments);
@@ -120,9 +123,13 @@ zul.box.Layout = zk.$extends(zk.Widget, {
 			spc = this._spacing;
 		
 		oo.push('<div id="', child.uuid, '-chdex" class="', this.getZclass(), '-inner"');
-		var next = child.nextSibling; //Bug ZK-1526: popup should not consider spacing
-		if(spc && spc != 'auto' && next && !next.$instanceof(zul.wgt.Popup))
-			oo.push(' style="padding-' + (vert ? 'bottom:' : 'right:') + spc + '"');
+		if (spc && spc != 'auto') {
+			oo.push(' style="', !child.isVisible() ? 'display:none;' : ''); //Bug ZK-1650: set chdex display style according to child widget
+			var next = child.nextSibling; //Bug ZK-1526: popup should not consider spacing
+			if (next && !next.$instanceof(zul.wgt.Popup))
+				oo.push('padding-', vert ? 'bottom:' : 'right:', spc);
+			oo.push('"');
+		}
 		oo.push('>');
 		child.redraw(oo);
 		oo.push('</div>');
