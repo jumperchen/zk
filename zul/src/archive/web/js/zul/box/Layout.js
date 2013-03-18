@@ -147,15 +147,17 @@ zul.box.Layout = zk.$extends(zk.Widget, {
 		var vert = this.isVertical_();
 		if (!zk.mounting) { // ignore for the loading time
 			for (var kid = this.firstChild; kid; kid = kid.nextSibling) {
-				if (vert ? (kid._nvflex && kid.getVflex() != 'min')
-						 : (kid._nhflex && kid.getHflex() != 'min')) {
-					
+				var chdex = kid.$n('chdex');
+				//ZK-1679: clear height only vflex != min, clear width only hflex != min
+				if (vert && kid._nvflex && kid.getVflex() != 'min') {
 					kid.setFlexSize_({height:'', width:''});
-					var chdex = kid.$n('chdex');
-					if (chdex) {
+					if (chdex)
 						chdex.style.height = '';
+				}
+				if (!vert && kid._nhflex && kid.getHflex() != 'min') {
+					kid.setFlexSize_({height:'', width:''});
+					if (chdex)
 						chdex.style.width = '';
-					}
 				}
 			}
 		}
@@ -211,7 +213,7 @@ zul.box.Layout = zk.$extends(zk.Widget, {
 		//   Find max sibling width and apply on the child
 		if (wgt._hflex && this.isVertical_() && attr == 'w') {
 			for (var w = wgt.nextSibling, max = 0, width; w; w = w.nextSibling) {
-				if (!wgt._hflex) {
+				if (!w._hflex) {
 					width = zjq.minWidth(w.$n());
 					max = width > max ? width : max;
 				}
