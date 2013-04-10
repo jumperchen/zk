@@ -1,0 +1,20 @@
+<?script content="zk.useStackup = 'auto/gecko';"?>
+<zk xmlns:n="native">
+	<window border="none" width="100%" height="100%">
+		<borderlayout>
+			<west width="300px">
+				<vlayout>
+					Click "Test" button, should not see the pdf file.
+					<button label="Test">
+						<attribute name="onClick">
+							Messagebox.show("Test");
+						</attribute>
+					</button>
+				</vlayout>
+			</west>
+			<center id="center">
+				<n:embed src="data/sample.pdf" type="application/pdf" style="width: 100%; height: 100%;" />
+			</center>
+		</borderlayout>
+	</window>
+</zk>
