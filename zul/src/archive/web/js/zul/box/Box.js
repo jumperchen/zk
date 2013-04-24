@@ -435,7 +435,7 @@ zul.box.Box = zk.$extends(zul.Widget, {
 				if (szes && !kid.$instanceof(zul.box.Splitter) && !kid.$instanceof(zul.wgt.Cell))
 					++k;
 				if (kid._nvflex && kid.getVflex() != 'min') {
-					var chdex = kid.$n(); //Bug ZK-1569: should clear widget size instead of chdex
+					var chdex = kid.$n('chdex');
 					if (chdex) {
 						if (orient == 'h')
 							chdex.style.height = szes && k < szes.length ? szes[k] : '';

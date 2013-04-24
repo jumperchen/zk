@@ -265,8 +265,9 @@ zWatch = (function () {
 		}
 	}
 	//Returns if c is visible
-	function _visible(name, c) {
-		return c.isWatchable_ && c.isWatchable_(name); //in future, c might not be a widget
+	function _visible(name, c, down) {
+		var p = down ? null : c.parent; //Bug ZK-1509, ZK-1569: if not fireDown, should check parent widget is watch-able
+		return c.isWatchable_ && c.isWatchable_(name, p); //in future, c might not be a widget
 	}
 	//Returns if c is a visible child of p (assuming p is visible)
 	function _visibleChild(name, p, c, cache) {
@@ -301,11 +302,11 @@ zWatch = (function () {
 			}
 		return found;
 	}
-	function _visiSubset(name, xinfs) {
+	function _visiSubset(name, xinfs, down) {
 		xinfs = xinfs.$clone(); //make a copy since unlisten might happen
 		if (_visiEvts[name])
 			for (var j = xinfs.length; j--;)
-				if (!_visible(name, xinfs[j][0]))
+				if (!_visible(name, xinfs[j][0], false))
 					xinfs.splice(j, 1);
 		return xinfs;
 	}

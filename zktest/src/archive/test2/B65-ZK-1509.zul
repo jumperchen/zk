@@ -3,35 +3,37 @@
 	After resize browser, all yellow block should no be disappeared.
 	</label>
 	<separator height="20px" />
+	Cardlayout in Div
 	<div width="400px" height="100px">
 		<cardlayout hflex="1" vflex="1"
 			style="background-color:yellow" selectedIndex="0">
-			<div width="100%" height="100%">Cardlayout in Div</div>
+			<div width="100%" height="100%"></div>
 		</cardlayout>
 	</div>
 
 	<separator />
 
+	Div in Div
 	<div width="400px" height="100px">
 		<div hflex="1" vflex="1" style="background-color:yellow">
-			Div in Div
 		</div>
 	</div>
 
 	<separator bar="true" height="20px" />
 	
+	Cardlayout in Hlayout
 	<hlayout width="400px" height="100px">
 		<cardlayout hflex="1" vflex="1"
 			style="background-color:yellow" selectedIndex="0">
-			<div width="100%" height="100%">Cardlayout in Hlayout</div>
+			<div width="100%" height="100%"></div>
 		</cardlayout>
 	</hlayout>
 
 	<separator />
 
+	Div in Hlayout
 	<hlayout width="400px" height="100px">
 		<div hflex="1" vflex="1" style="background-color:yellow">
-			Div in Hlayout
 		</div>
 	</hlayout>
 </zk>
