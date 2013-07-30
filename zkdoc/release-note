@@ -7,6 +7,22 @@ ZK 6.5.4
   ZK-1837: Checking the checkbox inside the groupbox should not trigger the onOpen event of Groupbox
   ZK-1840: Chained Long operations using different event queues, causing errors after first operation finishes
   ZK-1841: maximum allowed number of desktops is one more then the number set in the max-desktops-per-session element in zk.xml
+  ZK-1842: Listbox scroll bug listheader sort
+  ZK-1839: Listbox select mold not works in listcell
+  ZK-1847: When sending a request without data to server, the created event's data is an empty map instead of null
+  ZK-1777: Server Push does not initialize when recycling
+  ZK-1850: Unused conditional in org.zkoss.bind.converter.sys.ListboxModelConverter
+  ZK-1851: Apply a format into the Spinner componet, it will show NaN value after increase the number
+  ZK-1862: Should not echo parameter value back to client
+  ZK-1588: bandbox popup should drop up when the space between the bandbox and the bottom of browser is not enough, refix in ie10 
+  ZK-1863: validationMessages with init annotation throw exception
+  ZK-1864: share listmodelist cause un-predictable reload
+  ZK-1861: Js error when flex + visible = false
+  ZK-1867: Set visible of row doesn't work correctly
+  ZK-1868: TypeError: $tipOff is null in function _tt_close()
+  ZK-1870: ZK Does not set session in SessionCtrl when handling a Portlet Ajax request
+  ZK-1854: Issue with toolbar and hflex= 1
+  ZK-1857: ZK 6.5 EE OSGi: Comet Servlet 3 Push does not work
 
   --------
 ZK 6.5.3
