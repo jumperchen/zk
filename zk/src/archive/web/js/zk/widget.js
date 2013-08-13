@@ -4610,7 +4610,7 @@ zk._wgtutl = { //internal utilities
 			return;
 		}
 
-		for (var tns = ['IFRAME', 'APPLET'], i = 2; i--;)
+		for (var tns = ['IFRAME', 'APPLET', 'EMBED'], i = tns.length; i--;) //ZK-1707: should also consider EMBED element
 			l_nxtel:
 			for (var ns = document.getElementsByTagName(tns[i]), j = ns.length; j--;) {
 				var n = ns[j], $n = zk(n), visi;
