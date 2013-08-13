@@ -8,6 +8,7 @@ ZK 5.0.13
   ZK-1594: Blinking popup in Firefox
   ZK-1618: Tabpanel not follow the visible attribute
   ZK-1622: Paging listbox scrollbar is wrong
+  ZK-1707: zk.useStackup doesn't work as expected with embed component on Firefox
   
 * Upgrade Notes
 
