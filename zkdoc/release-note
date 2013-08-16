@@ -26,6 +26,14 @@ ZK 6.5.4
   ZK-1871: Comet Servlet 3 Push returns 500 Internal Server Error
   ZK-1859: Comet Servlet 3 Push: AsycInfo does not catch IllegalStateException thrown on GlassFish 3.1.2
   ZK-1747: Chosenbox - Combobox behaving differently (when using ListSubModel)
+  ZK-1877: Can not drag a slider, which is in a grid, to 0
+  ZK-1878: IE Compatibility View issue when using Meta tag with IE=edge
+  ZK-1875: DateFormatConverter should be serializable
+  ZK-1885: IE8 scrollable div (with vflex) and tooltip
+  ZK-1884: The slider's value should not be greater then maxpos after clicked its rightmost position
+  ZK-1887: detach - reattach component in ViewModel @AfterCompose, fails to initialize bindings
+  ZK-1888: Grid in paging mold doesn't change pages count
+  ZK-1889: zul.lang.wpd is always loaded twice with some JS package merge configurations
 
   --------
 ZK 6.5.3
