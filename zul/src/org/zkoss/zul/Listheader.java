@@ -181,6 +181,13 @@ public class Listheader extends HeaderElement {
 	 * are called with {@link FieldComparator}, if
 	 * {@link #getSortDescending} and/or {@link #getSortAscending} are null.
 	 * If you assigned a comparator to them, it won't be affected.
+	 * The auto created comparator is case-sensitive.
+	 * 
+	 * <p>If "auto(LOWER(FIELD_NAME))" or "auto(UPPER(FIELD_NAME))" is specified,
+	 * {@link #setSortAscending} and/or {@link #setSortDescending} 
+	 * are called with {@link FieldComparator}, if
+	 * {@link #getSortDescending} and/or {@link #getSortAscending} are null.
+	 * If you assigned a comparator to them, it won't be affected.
 	 * The auto created comparator is case-insensitive.
 	 *
 	 * <p>If "auto(<i>number</i>)" is specified, 
@@ -521,12 +528,12 @@ public class Listheader extends HeaderElement {
 				for (Listitem item : children) {
 					if (previous == null || compare(cmprx, previous, item) != 0) {
 						//new group
-						final List<Component> cells = item.getChildren();
+						final List<Listcell> cells = item.getChildren();
 						if (cells.size() < index)
 							throw new IndexOutOfBoundsException(
 									"Index: "+index+" but size: "+ cells.size());
 						Listgroup group;
-						Listcell cell = (Listcell)cells.get(index);
+						Listcell cell = cells.get(index);
 						if (cell.getLabel() != null) {
 							group = new Listgroup(cell.getLabel());
 						} else {

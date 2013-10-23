@@ -18,9 +18,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.bind.BindContext;
 import org.zkoss.bind.Phase;
 import org.zkoss.bind.Property;
@@ -29,7 +31,7 @@ import org.zkoss.bind.sys.Binding;
 import org.zkoss.bind.sys.InitPropertyBinding;
 import org.zkoss.bind.sys.LoadPropertyBinding;
 import org.zkoss.bind.sys.SavePropertyBinding;
-import org.zkoss.util.logging.Log;
+
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.UiException;
 import org.zkoss.zk.ui.event.Event;
@@ -42,7 +44,7 @@ import org.zkoss.zk.ui.event.Event;
 /*package*/ class PropertyBindingHandler extends AbstractBindingHandler{
 	private static final long serialVersionUID = 1L;
 
-	private static final Log _log = Log.lookup(PropertyBindingHandler.class);
+	private static final Logger _log = LoggerFactory.getLogger(PropertyBindingHandler.class);
 	
 	private final Map<BindingKey, List<InitPropertyBinding>> _initBindings; //comp+_fieldExpr -> bindings (load when init)
 	private final Map<BindingKey, List<LoadPropertyBinding>> _loadPromptBindings; //comp+_fieldExpr -> bindings (load _prompt | load on property change)
@@ -141,7 +143,7 @@ import org.zkoss.zk.ui.event.Event;
 		BindContextUtil.setConverterArgs(_binder, binding.getComponent(), ctx, binding);
 		BindContextUtil.setValidatorArgs(_binder, binding.getComponent(), ctx, binding);
 		try {
-			if(_log.debugable()){
+			if(_log.isDebugEnabled()){
 				_log.debug("doSavePropertyBinding:binding.save() comp=[%s],binding=[%s],command=[%s],evt=[%s],notifys=[%s]",comp,binding,command,evt,notifys);
 			}
 			doPrePhase(Phase.SAVE_BINDING, ctx);
@@ -157,14 +159,14 @@ import org.zkoss.zk.ui.event.Event;
 	}
 	
 	//generic operation to load a property binding
-	private void doLoadBinding(Component comp, LoadPropertyBinding binding, String command) {
-		final BindContext ctx = BindContextUtil.newBindContext(_binder, binding, false, command, binding.getComponent(), null);
+	private void doLoadBinding(Component comp, LoadPropertyBinding binding, String command, Event evt) {
+		final BindContext ctx = BindContextUtil.newBindContext(_binder, binding, false, command, binding.getComponent(), evt);
 		BindContextUtil.setConverterArgs(_binder, binding.getComponent(), ctx, binding);
 		if(binding instanceof InitPropertyBindingImpl){
 			ctx.setAttribute(BinderImpl.IGNORE_TRACKER, Boolean.TRUE);//ignore tracker when doing el , we don't need to track the init
 		}
 		try { 
-			if(_log.debugable()){
+			if(_log.isDebugEnabled()){
 				_log.debug("doLoadPropertyBinding:binding.load(),component=[%s],binding=[%s],context=[%s],command=[%s]",comp,binding,ctx,command);
 			}
 			doPrePhase(Phase.LOAD_BINDING, ctx);
@@ -180,11 +182,11 @@ import org.zkoss.zk.ui.event.Event;
 	}
 	
 	//for event -> prompt only, no command
-	void doLoadEvent(BindingKey bkey,Component comp, String evtnm) {
+	void doLoadEvent(BindingKey bkey,Component comp, Event evt) {
 		final List<LoadPropertyBinding> bindings = _loadEventBindings.get(bkey);
 		if (bindings != null) {
 			for (LoadPropertyBinding binding : bindings) {
-				doLoadBinding(comp, binding, null);
+				doLoadBinding(comp, binding, null,evt);
 			}
 		}
 	}
@@ -217,7 +219,7 @@ import org.zkoss.zk.ui.event.Event;
 			try {
 				doPrePhase(Phase.VALIDATE, ctx);
 				final Property p = binding.getValidate(ctx); 
-				if(_log.debugable()){
+				if(_log.isDebugEnabled()){
 					_log.debug("doValidateSaveEvent comp=[%s],binding=[%s],evt=[%s],validate=[%s]",comp,binding,evt,p);
 				}
 				if(p==null){
@@ -232,7 +234,7 @@ import org.zkoss.zk.ui.event.Event;
 				ValidationContext vctx = new ValidationContextImpl(null, p, toCollectedProperties(p), ctx, true);
 				binding.validate(vctx);
 				boolean valid = vctx.isValid();
-				if(_log.debugable()){
+				if(_log.isDebugEnabled()){
 					_log.debug("doValidateSaveEvent result=[%s]",valid);
 				}
 				
@@ -320,7 +322,7 @@ import org.zkoss.zk.ui.event.Event;
 		final List<LoadPropertyBinding> bindings = _loadBeforeBindings.get(command);
 		if (bindings != null) {
 			for (LoadPropertyBinding binding : bindings) {
-				doLoadBinding(comp, binding, command);
+				doLoadBinding(comp, binding, command, null);
 			}
 		}
 	}
@@ -329,7 +331,7 @@ import org.zkoss.zk.ui.event.Event;
 		final List<LoadPropertyBinding> bindings = _loadAfterBindings.get(command);
 		if (bindings != null) {
 			for (LoadPropertyBinding binding : bindings) {
-				doLoadBinding(comp, binding, command);
+				doLoadBinding(comp, binding, command, null);
 			}
 		}
 	}
@@ -369,7 +371,7 @@ import org.zkoss.zk.ui.event.Event;
 		final List<LoadPropertyBinding> propBindings = _loadPromptBindings.get(bkey);
 		if (propBindings != null) {
 			for (LoadPropertyBinding binding : propBindings) {
-				doLoadBinding(comp,binding,null);
+				doLoadBinding(comp,binding,null,null);
 			}
 		}
 	}
@@ -378,7 +380,7 @@ import org.zkoss.zk.ui.event.Event;
 		final List<InitPropertyBinding> initBindings = _initBindings.get(bkey);
 		if (initBindings != null) {
 			for (InitPropertyBinding binding : initBindings) {
-				doLoadBinding(comp, binding,null);
+				doLoadBinding(comp, binding,null,null);
 			}
 		}
 	}

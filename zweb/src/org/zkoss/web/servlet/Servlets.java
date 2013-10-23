@@ -14,25 +14,28 @@ Copyright (C) 2001 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.web.servlet;
 
-import java.io.File;
+import static org.zkoss.lang.Generics.cast;
+
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -43,20 +46,20 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.idom.Element;
 import org.zkoss.idom.input.SAXBuilder;
 import org.zkoss.lang.SystemException;
 import org.zkoss.util.CacheMap;
 import org.zkoss.util.Checksums;
 import org.zkoss.util.Locales;
-import org.zkoss.util.logging.Log;
 import org.zkoss.util.resource.Locator;
 import org.zkoss.util.resource.Locators;
 import org.zkoss.web.Attributes;
 import org.zkoss.web.servlet.http.Encodes;
 import org.zkoss.web.util.resource.ExtendletContext;
 import org.zkoss.web.util.resource.ServletContextLocator;
-import static org.zkoss.lang.Generics.cast;
 
 /**
  * The servlet relevant utilities.
@@ -66,7 +69,7 @@ import static org.zkoss.lang.Generics.cast;
  * @see org.zkoss.web.servlet.Charsets
  */
 public class Servlets {
-	private static final Log log = Log.lookup(Servlets.class);
+	private static final Logger log = LoggerFactory.getLogger(Servlets.class);
 
 	private static ClientIdentifier _clientId;
 	private static final Pattern
@@ -76,7 +79,9 @@ public class Servlets {
 		_rmozilla = Pattern.compile(".*(mozilla)(?:.*? rv:([\\w.]+))?.*"),
 		_rchrome = Pattern.compile(".*(chrome)[ /]([\\w.]+).*"),
 		_randroid = Pattern.compile(".*(android)[ /]([\\w.]+).*"),
-		_rsafari = Pattern.compile(".*(safari)[ /]([\\w.]+).*");
+		_rsafari = Pattern.compile(".*(safari)[ /]([\\w.]+).*"),
+		_rtrident = Pattern.compile("trident/([0-9\\.]+)");
+				
 
 	private static final boolean _svl24, _svl23, _svl3;
 	static {
@@ -540,6 +545,9 @@ public class Servlets {
 		if (vtype == null)
 			return true; //not care about version
 		
+		if (vclient == null)
+			return false; //not matched for Bug ZK-1930
+		
 		double v1 = vclient.doubleValue(), v2 = vtype.doubleValue();
 		return equals ? v1 == v2: v1 >= v2;
 	}	
@@ -731,7 +739,31 @@ public class Servlets {
 		userAgent = userAgent.toLowerCase(java.util.Locale.ENGLISH);
 		return userAgent.indexOf("zk") >= 0 && userAgent.indexOf("rhil") >= 0;
 	}
-
+	
+	/**
+	 * Returns the IE compatibility information.
+	 * @param request
+	 * @return three double values in array [ie version, trident version, ie real version]
+	 * @since 6.5.5
+	 */
+	public static double[] getIECompatibilityInfo(ServletRequest request) {
+		final String s = ((HttpServletRequest)request).getHeader("user-agent");
+		if (isBrowser(s, "ie")) {
+			final String ua = s.toLowerCase(Locale.ENGLISH);
+			Matcher tridentMatcher = _rtrident.matcher(ua);
+			if(tridentMatcher.find()) {
+				double tridentVersion = Double.parseDouble(tridentMatcher.group(1));
+				Matcher msieMatcher = _rmsie.matcher(ua);
+				if (msieMatcher.matches()) {
+					double ieVersion = getVersion(msieMatcher);
+					double ieVersionReal = tridentVersion + 4.0;
+					return new double[]{ieVersion, tridentVersion, ieVersionReal};
+				}
+			}
+		}
+		return null;
+	}
+	
 	/** Returns the user-agent header, which indicates what the client is,
 	 * or an empty string if not available.
 	 *
@@ -739,23 +771,14 @@ public class Servlets {
 	 * the client is with {@link String#indexOf}.
 	 *
 	 * @since 3.0.2
-	 */
+	 */	
 	public static final String getUserAgent(ServletRequest req) {
 		if (req instanceof HttpServletRequest) {
 			final String s = ((HttpServletRequest)req).getHeader("user-agent");
 			if (s != null) {
-				if (isBrowser(s, "ie")) {
-					Cookie[] cookies = ((HttpServletRequest)req).getCookies();
-					if (cookies == null) 
-						return s;
-					for (Cookie c : cookies) {
-						// the key of zkie-compatibility is the same as in zk.js
-						if ("zkie-compatibility".equals(c.getName())) {
-							String value = c.getValue();
-							if (value != null) 
-								return s + "; MSIE " + value + ".0";
-						}
-					}
+				double[] ieCompatibilityInfo = getIECompatibilityInfo(req);
+				if(ieCompatibilityInfo != null) {
+					return s + "; MSIE " + ieCompatibilityInfo[2];
 				}
 				return s;
 			}
@@ -817,7 +840,7 @@ public class Servlets {
 	void forward(ServletContext ctx, ServletRequest request,
 	ServletResponse response, String uri, Map params, int mode)
 	throws IOException, ServletException {
-//		if (log.debugable()) log.debug("Forwarding "+uri);
+//		if (log.isDebugEnabled()) log.debug("Forwarding "+uri);
 
 		//include or foward depending whether this page is included or not
 		if (isIncluded(request)) {
@@ -889,7 +912,7 @@ public class Servlets {
 	void include(ServletContext ctx, ServletRequest request,
 	ServletResponse response, String uri, Map params, int mode)
 	throws IOException, ServletException {
-//		if (log.debugable()) log.debug("Including "+uri+" at "+ctx);
+//		if (log.isDebugEnabled()) log.debug("Including "+uri+" at "+ctx);
 
 		//Note: we don't optimize the include to call ClassWebResource here
 		//since 1) it is too low level (might have some risk)
@@ -996,7 +1019,7 @@ public class Servlets {
 				return url; //unfortunately, we cannot detect if it exists
 			return new ParsedURI(ctx, uri).getResource();
 		} catch (Throwable ex) {
-			log.warningBriefly("Ignored: failed to load "+uri, ex);
+			log.warn("Ignored: failed to load "+uri, ex);
 			return null; //spec: return null if not found
 		}
 	}
@@ -1021,7 +1044,7 @@ public class Servlets {
 				return url.openStream();
 			return new ParsedURI(ctx, uri).getResourceAsStream();
 		} catch (Throwable ex) {
-			log.warningBriefly("Ignored: failed to load "+uri, ex);
+			log.warn("Ignored: failed to load "+uri, ex);
 			return null; //spec: return null if not found
 		}
 	}
@@ -1188,7 +1211,7 @@ public class Servlets {
 		if (xmlURL == null)
 			throw new SystemException("File not found: "+APP_XML);
 
-//		if (log.debugable()) log.debug("Parsing "+APP_XML);
+//		if (log.isDebugEnabled()) log.debug("Parsing "+APP_XML);
 		final Element root =
 			new SAXBuilder(false,false,true).build(xmlURL).getRootElement();
 

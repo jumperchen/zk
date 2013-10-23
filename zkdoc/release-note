@@ -1,5 +1,57 @@
   --------
-ZK 6.5.4 
+ZK 7.0.0
+
+* Features
+  ZK-1898: Tree support render on demand
+  ZK-1813: LabelImageElement support icon font CSS class instead of Image
+  ZK-1818: Tabbox support vertical-right, horizontal-bottom orient
+  ZK-1883: Upgrade JQuery to 1.10
+  ZK-1835: Navigation Components
+  ZK-1882: Support Richlet with Servlet Filter
+  ZK-1796: Make audio component support HTML5
+  ZK-1725: ExtendletLoader should provide debug information
+  ZK-1866: ZK JSON: improve usability by accepting Collection instead of List
+  ZK-1912: Anchor(A) component support preserve-blank
+  ZK-1919: ZK Components support static uuid
+  ZK-1921: ZK Fileupload component support HTML 5 accept attribute
+  ZK-19: Support SLF4J API for logging instead
+  ZK-1729: Change generic code
+  ZK-1956: Support toggle switch to enable or disable tablet UI
+  
+* Bugs
+  ZK-1683: endless loop AU-loop in Grid, on Render Exception
+  ZK-1853: Audio component doesn't work with Chrome and Firefox
+  ZK-1879: collapse and open the splitter makes the hbox width no effect in zksandbox combobox case
+  ZK-1911: Text-as with childable cannot work with preserve-blank for component setting
+  ZK-1959: The height of arrow should not change when the tabbox add tab
+
+* Upgrade Notes
+  + org.zkoss.util.logging.Log class and org.zkoss.util.logging.config.file library-property
+  are deprecated, please use SLF4J API for logging instead.  
+
+  --------
+ZK 6.5.5
+* Features
+  ZK-1971: ZK wcs file shall exclude the css with zk logo image
+  ZK-1973: Server processing effect can be configurable
+
+* Bugs
+  ZK-1944: AUTO scale does not work if the value of decimalebox is bind form VM
+  ZK-1946: The select mold listbox with multiple attribute in a draggable listitem will be disabled (Chrome, IE10)
+  ZK-1949: Clear the input value in a spinner with binding integer value will cause UiException
+  ZK-1878: IE Compatibility View issue when using Meta tag with IE=edge
+  ZK-1947: Can not download files if <max-desktops-per-session> is set to 1 in zk.xml
+  ZK-1948: IE8 Menupopup Shadow causes horizontal scrollbar
+  ZK-1951: Page becomes blank after detaching a modal window having an iframe loaded with PDF in IE 10
+  ZK-1964: Datebox with time cannot be selected when use tablet's device
+  ZK-1960: save binding to an array throws ClassCastException
+  ZK-1969: listbox rod with paging mold causes incorrect keyboard navigation
+  ZK-1979: Server push doesn't work when open 2 browser tab
+
+  --------
+
+ZK 6.5.4
+Sep 24, 2013
 * Features
 
 * Bugs
@@ -37,6 +89,29 @@ ZK 6.5.4
   ZK-1893: Failure to configure log handler properties
   ZK-1890: Can't subscribe eventqueue in desktop cleanup
   ZK-1897: Possible Cross-site Scripting Vulnerability
+  ZK-1896: ZK session timeout on JBoss AS 7 cluster issue
+  ZK-1895: Paging on listbox with onFulfill
+  ZK-1900: Auto-complete Combobox in the bottom of the browser doesn't sync dropdown position well
+  ZK-1891: Combobox with Validator will trigger reload selectedItem when typing
+  ZK-1905: Chosenbox emptyMessage does not re-appear after remove all selected items
+  ZK-1904: Datebox doesn't sync dropdown stackup well (IE only)
+  ZK-1908: Databinding Load order causing problems on Paging component.
+  ZK-1909: Set maxlength attribute to the doublebox conponent, the maxlength checking is not correct
+  ZK-1913: AuResponse of stop comet server push would override the request of start in some situation
+  ZK-1907: Validation error style, long words overlapping box
+  ZK-1906: Chosenbox getSelectedObjects() returns empty list if model is ListModel of JavaBean instances instead of ListModel of String
+  ZK-1916: Different language codes for IE10 under Windows 8
+  ZK-1918: Serialization issue with Script component
+  ZK-1920: after listbox.getItems().clear() and re-assign listitems to the listbox, listitem.setSelected(true) do not work
+  ZK-1925: IE9/10 Chrome vflex issue, with invisible divs
+  ZK-1914: Frozen grid with footer: throws error on client console and does not correctly calculate column width, when the frozen area is scrolled
+  ZK-1928: Converter Override (default-binding) causing "Array of attribute values not allowed "
+  ZK-1930: A Error occur on class org.zkoss.web.servlet.Servlets method public static boolean isBrowser(String userAgent, String type)
+  ZK-1929: The hover stype of non-closable groupbox are not the same  
+  ZK-1932: Another vflex issue with invisible divs (all browsers)
+  ZK-1934: Tooltip causing error, when positioning, when component is replaced at the same time
+  ZK-1758: Selectors finds too many components when using CSS child selector
+  ZK-1938: Grid/Listbox doesn't bind activePage attribute as default binding
 
   --------
 ZK 6.5.3

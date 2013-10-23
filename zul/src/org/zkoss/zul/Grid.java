@@ -28,13 +28,16 @@ import java.util.Set;
 import java.util.Comparator;
 
 import static org.zkoss.lang.Generics.cast;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.lang.Classes;
 import org.zkoss.lang.Exceptions;
 import org.zkoss.lang.Library;
 import org.zkoss.lang.Objects;
 import org.zkoss.lang.Strings;
 import org.zkoss.io.Serializables;
-import org.zkoss.util.logging.Log;
+
 import org.zkoss.zk.au.AuRequests;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Execution;
@@ -209,7 +212,7 @@ import org.zkoss.zul.impl.XulElement;
  * @see RowRendererExt
  */
 public class Grid extends MeshElement {
-	private static final Log log = Log.lookup(Grid.class);
+	private static final Logger log = LoggerFactory.getLogger(Grid.class);
 	private static final long serialVersionUID = 20091111L;
 
 	private static final String ATTR_ON_INIT_RENDER_POSTED =
@@ -328,6 +331,10 @@ public class Grid extends MeshElement {
 						initModel();
 					} else {
 						resetDataLoader();  //enforce recreate dataloader
+						
+						// Bug ZK-1895
+						//The attribute shall be removed, otherwise DataLoader will not syncModel when setModel
+						Executions.getCurrent().removeAttribute("zkoss.Grid.deferInitModel_"+getUuid());
 					}
 				}
 			} else if (_model != null){ //rows not created yet
@@ -1029,7 +1036,7 @@ public class Grid extends MeshElement {
 					label.applyProperties();
 					label.setParent(row);
 				} catch (Throwable t) {
-					log.error(t);
+					log.error("", t);
 				}
 				row.setLoaded(true);
 				throw ex;
@@ -1110,7 +1117,7 @@ public class Grid extends MeshElement {
 
 	public void renderItems(Set<? extends Row> rows) {
 		if (_model == null) { //just in case that application developers might change it
-			if (log.debugable()) log.debug("No model no render");
+			if (log.isDebugEnabled()) log.debug("No model no render");
 			return;
 		}
 

@@ -16,25 +16,24 @@ Copyright (C) 2004 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.zul;
 
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.mesg.Messages;
-import org.zkoss.zul.mesg.MZul;
-import org.zkoss.util.logging.Log;
-
-import org.zkoss.zk.ui.WebApp;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.UiException;
+import org.zkoss.zk.ui.WebApp;
 import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.EventListener;
+import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.SerializableEventListener;
-
 import org.zkoss.zul.impl.MessageboxDlg;
+import org.zkoss.zul.mesg.MZul;
 
 /**
  * Represents the message box.
@@ -46,26 +45,26 @@ import org.zkoss.zul.impl.MessageboxDlg;
  * @author tomyeh
  */
 public class Messagebox {
-	private static final Log log = Log.lookup(Messagebox.class);
+	private static final Logger log = LoggerFactory.getLogger(Messagebox.class);
 	private static String _templ = "~./zul/html/messagebox.zul";
 
 	/** A symbol consisting of a question mark in a circle.
 	 * <p>Since 3.5.0, they are actually style class names to display the icon.
 	 */
-	public static final String QUESTION = "z-msgbox z-msgbox-question";
+	public static final String QUESTION = "z-messagebox-icon z-messagebox-question";
 	/** A symbol consisting of an exclamation point in a triangle with
 	 * a yellow background
 	 * <p>Since 3.5.0, they are actually style class names to display the icon.
 	 */
-	public static final String EXCLAMATION  = "z-msgbox z-msgbox-exclamation";
+	public static final String EXCLAMATION  = "z-messagebox-icon z-messagebox-exclamation";
 	/** A symbol of a lower case letter i in a circle.
 	 * <p>Since 3.5.0, they are actually style class names to display the icon.
 	 */
-	public static final String INFORMATION = "z-msgbox z-msgbox-information";
+	public static final String INFORMATION = "z-messagebox-icon z-messagebox-information";
 	/** A symbol consisting of a white X in a circle with a red background.
 	 * <p>Since 3.5.0, they are actually style class names to display the icon.
 	 */
-	public static final String ERROR = "z-msgbox z-msgbox-error";		
+	public static final String ERROR = "z-messagebox-icon z-messagebox-error";		
 	/** Contains no symbols. */
 	public static final String NONE = null;
 
@@ -187,7 +186,7 @@ public class Messagebox {
 				try {
 					dlg.detach();
 				} catch (Throwable ex2) {
-					log.warningBriefly("Failed to detach when recovering from an error", ex2);
+					log.warn("Failed to detach when recovering from an error", ex2);
 				}
 				throw UiException.Aide.wrap(ex);
 			}

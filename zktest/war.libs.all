@@ -34,3 +34,6 @@ js.jar
 jython.jar
 flashchart.jar
 commons-beanutils.jar
+commons-codec.jar
+slf4j-api.jar
+slf4j-jdk14.jar

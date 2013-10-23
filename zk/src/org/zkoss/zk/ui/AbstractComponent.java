@@ -35,14 +35,16 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.io.Serializables;
 import org.zkoss.json.JavaScriptValue;
 import org.zkoss.lang.Classes;
 import org.zkoss.lang.Objects;
 import org.zkoss.lang.Strings;
+import org.zkoss.lang.Threads;
 import org.zkoss.util.CollectionsX;
 import org.zkoss.util.Converter;
-import org.zkoss.util.logging.Log;
 import org.zkoss.zk.au.AuRequest;
 import org.zkoss.zk.au.AuResponse;
 import org.zkoss.zk.au.AuService;
@@ -100,7 +102,7 @@ import org.zkoss.zk.ui.util.Template;
  */
 public class AbstractComponent
 implements Component, ComponentCtrl, java.io.Serializable {
-	private static final Log log = Log.lookup(AbstractComponent.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractComponent.class);
 	private static final long serialVersionUID = 20100719L;
 
 	/** Map(Class, Map(String name, Integer flags)). */
@@ -160,7 +162,7 @@ implements Component, ComponentCtrl, java.io.Serializable {
 			initAuxInfo().spaceInfo = new SpaceInfo();
 
 		_def.applyAttributes(this);
-//		if (log.debugable()) log.debug("Create comp: "+this);
+//		if (log.isDebugEnabled()) log.debug("Create comp: "+this);
 	}
 	/** Constructs a dummy component that is not associated
 	 * with any component definition.
@@ -1329,8 +1331,8 @@ implements Component, ComponentCtrl, java.io.Serializable {
 	 * By live we mean the developer could add or remove a child by manipulating the returned list directly.
 	 * <p>Default: instantiates and returns an instance of {@link Children}.
 	 */
-	public List<Component> getChildren() {
-		return new Children();
+	public <T extends Component> List<T> getChildren() {
+		return (List<T>) new Children();
 	}
 	/** Returns the root of the specified component.
 	 */
@@ -1390,6 +1392,7 @@ implements Component, ComponentCtrl, java.io.Serializable {
 		if (_page != null) {
 			getAttachedUiEngine().addInvalidate(this);
 		}
+		
 	}
 
 	/** Causes a response to be sent to the client.
@@ -2676,7 +2679,7 @@ w:use="foo.MyWindow"&gt;
 				msg += " because desktop was destroyed.\n"
 				+"It is usually caused by invalidating the native session directly. "
 				+"If it is required, please set Attributes.RENEW_NATIVE_SESSION first.";
-			log.warning(msg);
+			log.warn(msg);
 		}
 
 		//EventListener always is called even if comp isn't attached (e.g., EventQueue)
@@ -2784,7 +2787,7 @@ w:use="foo.MyWindow"&gt;
 		Object o = getAttribute("org.zkoss.zk.ui.updateByClient");
 		if (!(o instanceof Boolean && ((Boolean)o).booleanValue())
 		&& !(o instanceof String && "true".equals(o))) {
-			log.warning("Ignore update of "+name+"="+value+" from client for "+this.getClass());
+			log.warn("Ignore update of "+name+"="+value+" from client for "+this.getClass());
 			return; //ignored
 		}
 
@@ -2800,14 +2803,14 @@ w:use="foo.MyWindow"&gt;
 				try {
 					m = Classes.getCloseMethod(getClass(), mtdnm, new Class[] {null});
 				} catch (NoSuchMethodException e3) {
-					log.warningBriefly("setter not found", ex);
+					log.warn("setter not found", ex);
 					return; //ignore it
 				}
 			}
 			try {
 				args[0] = Classes.coerce(m.getParameterTypes()[0], value);
 			} catch (Throwable e2) {
-				log.warning(m+" requires "+m.getParameterTypes()[0]+", not "+value);
+				log.warn(m+" requires "+m.getParameterTypes()[0]+", not "+value);
 				return; //ignore it
 			}
 		}

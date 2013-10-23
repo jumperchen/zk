@@ -16,8 +16,7 @@ Copyright (C) 2011 Potix Corporation. All Rights Reserved.
 //if Browser Mode=9 and Document Mode=8, it means non-CSS3 but server can't detect it
 if (!zk.css3) {
 	var _defShadowOpts = {left: 4, right: 4, top: 3, bottom: 3},
-		_shadowEnding = zk.ie6_ ? '" class="z-shadow"></div>':
-		'" class="z-shadow"><div class="z-shadow-tl"><div class="z-shadow-tr"></div></div>'
+		_shadowEnding = '" class="z-shadow"><div class="z-shadow-tl"><div class="z-shadow-tr"></div></div>'
 		+'<div class="z-shadow-cl"><div class="z-shadow-cr"><div class="z-shadow-cm">&#160;</div></div></div>'
 		+'<div class="z-shadow-bl"><div class="z-shadow-br"></div></div></div>';
 
@@ -40,15 +39,8 @@ if (!zk.css3) {
 		 */
 		$init: function (element, opts) {
 			opts = this.opts = zk.eff._skuOpts(zk.$default(opts, _defShadowOpts));
-			if (zk.ie6_) {
-				opts.left -= 1;
-				opts.right -= 8;
-				opts.top -= 2;
-				opts.bottom -= 6;
-			}
-
 			this.node = element;
-			var sdwid = element.id + "-sdw";
+			var sdwid = element.id + '-sdw';
 			jq(element).before('<div id="' + sdwid + _shadowEnding);
 			this.shadow = jq(sdwid, zk)[0];
 		},
@@ -87,19 +79,17 @@ if (!zk.css3) {
 			var opts = this.opts,
 				l = node.offsetLeft, t = node.offsetTop,
 				w = node.offsetWidth, h = node.offsetHeight,
-				wd = Math.max(0, w - opts.left + opts.right),
+				// B65-ZK-1948: Shadow's should be inside the screen
+				wd = Math.max(0, l + w + opts.right > jq.innerWidth() ? w - opts.left : w - opts.left + opts.right),
 				hgh = Math.max(0, h - opts.top + opts.bottom),
 				st = shadow.style;
 			st.left = jq.px(l + opts.left);
 			st.top = jq.px(t + opts.top);
 			st.width = jq.px0(wd);
-			st.zIndex = zk.parseInt($node.css("zIndex"));
-			st.display = "block";
-			if (zk.ie6_) st.height = jq.px0(hgh);
-			else {
-				var cns = shadow.childNodes;
-				cns[1].style.height = jq.px0(hgh - cns[0].offsetHeight - cns[2].offsetHeight);
-			}
+			st.zIndex = zk.parseInt($node.css('zIndex'));
+			st.display = 'block';
+			var cns = shadow.childNodes;
+			cns[1].style.height = jq.px0(hgh - cns[0].offsetHeight - cns[2].offsetHeight);
 
 			var stackup = this.stackup;
 			if(opts.stackup) {
@@ -113,7 +103,7 @@ if (!zk.css3) {
 				st.width = jq.px0(w);
 				st.height = jq.px0(h);
 				st.zIndex = shadow.style.zIndex;
-				st.display = "block";
+				st.display = 'block';
 			}
 			return true;
 		},

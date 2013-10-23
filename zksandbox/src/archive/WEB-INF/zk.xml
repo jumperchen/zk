@@ -36,6 +36,13 @@ Copyright (C) 2006 Potix Corporation. All Rights Reserved.
 	</library-property>
 	-->
 	
+	<!-- Turn on if you want to always enable the process mask.
+	<library-property>
+		<name>org.zkoss.zk.ui.processMask.enabled</name>
+		<value>true</value>
+	</library-property>
+	-->
+
 	<!-- Turn on if you want to cache by etag for dynamic resource.
 	<library-property>
 		<name>org.zkoss.web.classWebResource.cache.etag</name>
@@ -347,6 +354,14 @@ Copyright (C) 2006 Potix Corporation. All Rights Reserved.
 	<richlet-mapping>
 		<richlet-name>Foo</richlet-name>
 		<url-pattern>/foo/*</url-pattern>
+	</richlet-mapping>
+
+	Note: Since ZK 7.0.0, when use ZK Richelt Filter, the url-pattern of the richlet-mapping should
+	start with the prefix url mapping which comes from filter-mapping in web.xml. For example,
+
+	<richlet-mapping>
+		<richlet-name>Foo</richlet-name>
+		<url-pattern>/zk/foo/*</url-pattern>
 	</richlet-mapping>
 	-->
 

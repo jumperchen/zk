@@ -17,14 +17,18 @@ it will be useful, but WITHOUT ANY WARRANTY.
 	function _isPE() {
 		return zk.isLoaded('zkex.sel');
 	}
-	// _dragImg changed to an array, update image node after origional DD_dragging
+	// _dragImg changed to an array, update image node after original DD_dragging
 	function updateImg(drag) {
 		var dragImg = drag._dragImg;
 		if (dragImg) {
 			// update drag image
-			var cls = jq(drag.node).hasClass('z-drop-allow')? 'z-drop-allow': 'z-drop-disallow';
-			for (var len = 0; len < dragImg.length; len ++)
-				dragImg[len].className = cls;
+			var allow = jq(drag.node).hasClass('z-drop-allow');
+			for (var len = 0; len < dragImg.length; len ++) {
+				if (allow)
+					jq(dragImg[len]).removeClass('z-icon-remove').addClass('z-icon-ok');
+				else
+					jq(dragImg[len]).removeClass('z-icon-ok').addClass('z-icon-remove');
+			}
 		}
 	}
 /**
@@ -47,7 +51,8 @@ zul.sel.Listitem = zk.$extends(zul.sel.ItemWidget, {
 		// TODO: this performance is not good.
 		if (_isPE() && this.parent && this.parent.hasGroup())
 			for (var w = this; w; w = w.previousSibling)
-				if (w.$instanceof(zkex.sel.Listgroup)) return w;
+				if (w.$instanceof(zkex.sel.Listgroup))
+					return w;
 				
 		return null;
 	},
@@ -59,7 +64,7 @@ zul.sel.Listitem = zk.$extends(zul.sel.ItemWidget, {
 	setLabel: function (val) {
 		this._autoFirstCell().setLabel(val);
 	},
-	// override this functino for multiple z-drop-cnt
+	// override this function for multiple z-drop-content
 	getDragMessage_: function () {
 		var p = this.parent,
 			p_sel = p._selItems,
@@ -81,7 +86,7 @@ zul.sel.Listitem = zk.$extends(zul.sel.ItemWidget, {
 				if (!msg)
 					msg = label;
 				else
-					msg += '</div><div class="z-drop-cnt"><span id="zk_ddghost-img'
+					msg += '</div><div class="z-drop-content"><span id="zk_ddghost-img'
 						+ (cnt++) + '" class="z-drop-disallow"></span>&nbsp;'
 						+ label;
 			}
@@ -105,7 +110,7 @@ zul.sel.Listitem = zk.$extends(zul.sel.ItemWidget, {
 		var dgelm = zk.DnD.ghost(drag, ofs, msg);
 
 		drag._orgcursor = document.body.style.cursor;
-		document.body.style.cursor = "pointer";
+		document.body.style.cursor = 'pointer';
 		jq(this.getDragNode()).addClass('z-dragged'); //after clone
 		// has multi drag image
 		drag._dragImg = jq('span[id^="zk_ddghost-img"]');
@@ -132,7 +137,7 @@ zul.sel.Listitem = zk.$extends(zul.sel.ItemWidget, {
 			
 		var style = this.$supers('domStyle_', arguments),
 			group = this.getListgroup();
-		return group && !group.isOpen() ? style + "display:none;" : style;
+		return group && !group.isOpen() ? style + 'display:none;' : style;
 	},
 	domClass_: function () {
 		var cls = this.$supers('domClass_', arguments),
@@ -144,6 +149,13 @@ zul.sel.Listitem = zk.$extends(zul.sel.ItemWidget, {
 	replaceWidget: function (newwgt) {
 		this._syncListitems(newwgt);
 		this.$supers('replaceWidget', arguments);
+	},
+	scrollIntoView: function () {
+		var bar = this.getListbox()._scrollbar;
+		if (bar) {
+			bar.syncSize();
+			bar.scrollToElement(this.$n());
+		}
 	},
 	_updHeaderCM: function (bRemove) {
 		// B50-3322970: need to clear Listheader _check cache
@@ -170,20 +182,6 @@ zul.sel.Listitem = zk.$extends(zul.sel.ItemWidget, {
 			if (b1 != b2)
 				box._updHeaderCM();
 		}
-	},
-	//super//
-	setVisible: function (visible) {
-		this.$supers('setVisible', arguments);
-		// ZK-1037 start
-		var box;
-		if (zk.ie == 9 && (box = this.getListbox())
-			&& box.$n()) {
-			if (visible)
-				box._fixHorScrollbar();
-			else
-				box._removeHorScrollbar();
-		}
-		// ZK-1037 end
 	}
 });
 })();

@@ -16,13 +16,17 @@ Copyright (C) 2005 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.zul;
 
-import java.lang.reflect.Method;
+import static org.zkoss.lang.Generics.cast;
+
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.Method;
 import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -31,22 +35,20 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Comparator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.io.Serializables;
-import org.zkoss.lang.Exceptions;
-import static org.zkoss.lang.Generics.*;
-
 import org.zkoss.lang.Classes;
+import org.zkoss.lang.Exceptions;
 import org.zkoss.lang.Library;
 import org.zkoss.lang.Objects;
-import org.zkoss.util.logging.Log;
 import org.zkoss.xel.VariableResolver;
 import org.zkoss.zk.au.AuRequests;
 import org.zkoss.zk.ui.Component;
-import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.UiException;
+import org.zkoss.zk.ui.WebApps;
 import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.CloneableEventListener;
 import org.zkoss.zk.ui.event.Event;
@@ -55,11 +57,11 @@ import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.SelectEvent;
 import org.zkoss.zk.ui.event.SerializableEventListener;
 import org.zkoss.zk.ui.util.ComponentCloneListener;
-import org.zkoss.zk.ui.util.Template;
 import org.zkoss.zk.ui.util.ForEachStatus;
-import org.zkoss.zul.event.ListDataEvent;
+import org.zkoss.zk.ui.util.Template;
 import org.zkoss.zul.event.PageSizeEvent;
 import org.zkoss.zul.event.PagingEvent;
+import org.zkoss.zul.event.RenderEvent;
 import org.zkoss.zul.event.TreeDataEvent;
 import org.zkoss.zul.event.TreeDataListener;
 import org.zkoss.zul.event.ZulEvents;
@@ -154,10 +156,27 @@ import org.zkoss.zul.impl.XulElement;
  * }
  * </code></pre>
  * 
+ * </br/>
+ * [Since 7.0.0] (EE version only)
+ * 
+ * <dt>org.zkoss.zul.tree.initRodSize</dt>. 
+ * <dd>Specifies the number of items rendered when the Tree first render.
+ * 
+ * <dt>org.zkoss.zul.tree.maxRodPageSize</dt>. 
+ * <dd>Specifies how many pages (of treeitems) to keep rendered in memory
+ *  (on the server side) when navigating the tree using pagination. (Paging mold only)
+ * 
+ * <dt>org.zkoss.zul.tree.preloadSize</dt>. 
+ * <dd>Specifies the number of items to preload when receiving
+ * the rendering request from the client.
+ * <p>It is used only if live data ({@link #setModel(TreeModel)} and
+ * not paging ({@link #getPagingChild}).</dd>
+ * 
+ * 
  * @author tomyeh
  */
 public class Tree extends MeshElement {
-	private static final Log log = Log.lookup(Tree.class);
+	private static final Logger log = LoggerFactory.getLogger(Tree.class);
 	private static final String ATTR_ON_INIT_RENDER_POSTED =
 		"org.zkoss.zul.Tree.onInitLaterPosted";
 
@@ -188,16 +207,21 @@ public class Tree extends MeshElement {
 	 * If exists, it is the last child
 	 */
 	private transient Paging _paging;
-	private EventListener<PagingEvent> _pgListener;
-	private EventListener<Event> _pgImpListener, _modelInitListener;
+	private EventListener<PagingEvent> _pgListener, _pgImpListener;
+	private EventListener<Event> _modelInitListener;
 
 	private int _currentTop = 0; // since 5.0.8 scroll position
 	private int _currentLeft = 0;
 	
 	private int _anchorTop = 0 ; //since 5.0.11/6.0.0 anchor position
-	private int _anchorLeft = 0 ; 
+	private int _anchorLeft = 0 ;
+	
+	private static final int INIT_LIMIT = -1; // since 7.0.0
+	private int _preloadsz = 50; // since 7.0.0
+	private transient LinkedList<Integer> _rodPagingIndex;  // since 7.0.0
 	
 	static {
+		addClientEvent(Tree.class, Events.ON_RENDER, CE_DUPLICATE_IGNORE|CE_IMPORTANT|CE_NON_DEFERRABLE);
 		addClientEvent(Tree.class, "onInnerWidth", CE_DUPLICATE_IGNORE|CE_IMPORTANT);
 		addClientEvent(Tree.class, Events.ON_SELECT, CE_DUPLICATE_IGNORE|CE_IMPORTANT);
 		addClientEvent(Tree.class, Events.ON_FOCUS, CE_DUPLICATE_IGNORE);
@@ -285,8 +309,8 @@ public class Tree extends MeshElement {
 	/**
 	 * Prepare the map of the visible items recursively in deep-first order.
 	 */
-	private boolean getVisibleItemsDFS(List<Component> list, Map<Treeitem, Boolean> map, int[] data) {
-		for (Component cmp: list) {
+	private <T extends Component> boolean getVisibleItemsDFS(List<T> list, Map<Treeitem, Boolean> map, int[] data) {
+		for (T cmp: list) {
 			if (cmp instanceof Treeitem) {
 				if (data[4] >= data[0]) return false; // full
 				final Treeitem item = (Treeitem) cmp;
@@ -435,10 +459,89 @@ public class Tree extends MeshElement {
 			return null; // skip to clone
 		}
 	}
-	private class PGImpListener implements SerializableEventListener<Event>,
-			CloneableEventListener<Event> {
-		public void onEvent(Event event) {
+	
+	private class PGImpListener implements SerializableEventListener<PagingEvent>,
+			CloneableEventListener<PagingEvent> {
+		public void onEvent(PagingEvent event) {
 			if (inPagingMold()) {
+				if (WebApps.getFeature("ee") && getModel() != null) {
+					if (_rodPagingIndex == null)
+						_rodPagingIndex = new LinkedList<Integer>();
+					
+					int ap =  event.getActivePage();
+					int size = Tree.this.getPaginal().getPageSize();
+					int mps = maxRodPageSize();
+
+					
+					// if mps is less than 0, we don't store the index.
+					if (mps >= 0 && !_rodPagingIndex.contains(ap)) {
+						_rodPagingIndex.add(ap);
+					}	
+					
+					if (mps >= 1 && mps < _rodPagingIndex.size()) {
+						LinkedList<Integer> sortedIndex = new LinkedList<Integer>();
+						mps = _rodPagingIndex.size() - mps;
+						while (mps-- > 0) {
+							sortedIndex.add(_rodPagingIndex.removeFirst());
+						}
+						Collections.sort(sortedIndex);
+						
+						int i = 0;
+						int start = sortedIndex.removeFirst() * size;
+						int end = start + size;
+						
+						for (Treeitem ti : new ArrayList<Treeitem>(Tree.this.getItems())) {
+							if (i < start) {
+								i++;
+								continue;
+							}
+							if (i >= end) {
+								if (sortedIndex.isEmpty()) {
+									break;
+								} else {
+									start = sortedIndex.removeFirst() * size;
+									end = start + size;
+								}
+							}
+							
+							if (!ti.isOpen() && ti.getDesktop() != null) {
+								ti.getChildren().clear();
+								ti.setRendered(false);
+								ti.setLoaded(false);
+							}
+								
+							i++;
+						}
+					}
+					
+					int start = ap * size;
+					int end = start + size;
+					int i = 0;
+					final Renderer renderer = new Renderer();
+					try {							
+						for (Treeitem ti : new ArrayList<Treeitem>(Tree.this.getItems())) {
+							if (i < start) {
+								i++;
+								continue;
+							}
+							if (i >= end) {
+								break;
+							}
+							if (!ti.isRendered()) {
+									ti.getChildren().clear();
+									Treechildren parent = (Treechildren) ti.getParent();
+									Object childNode = Tree.this.getAssociatedNode(ti, Tree.this);
+									renderChildren0(renderer, parent, ti, childNode, i);
+							}
+								
+							i++;
+						}
+					} catch (Throwable ex) {
+						renderer.doCatch(ex);
+					} finally {
+						renderer.doFinally();
+					}
+				}
 				invalidate();
 			}
 		}
@@ -1371,7 +1474,7 @@ public class Tree extends MeshElement {
 
 		//B50-ZK-721
 		if (!(parent instanceof Treeitem) || ((Treeitem) parent).isLoaded()) {
-			List<Component> siblings = tc.getChildren();
+			List<? extends Component> siblings = tc.getChildren();
 			// if there is no sibling or new item is inserted at end.
 			tc.insertBefore(newTi,
 					// Note: we don't use index >= size(); reason: it detects bug
@@ -1386,7 +1489,7 @@ public class Tree extends MeshElement {
 	 */
 	private void onTreeDataRemoved(Component parent,Object node, int index){
 		final Treechildren tc = treechildrenOf(parent);
-		final List<Component> items = tc.getChildren();
+		final List<? extends Component> items = tc.getChildren();
 		if (items.size() > index) {
 			((Treeitem) items.get(index)).detach();
 		} else if (!(parent instanceof Treeitem) || ((Treeitem) parent).isLoaded()) {
@@ -1398,7 +1501,7 @@ public class Tree extends MeshElement {
 	 * Handle event that child's content is changed
 	 */
 	private void onTreeDataContentChange(Component parent,Object node, int index){
-		List<Component> items = treechildrenOf(parent).getChildren();
+		List<? extends Component> items = treechildrenOf(parent).getChildren();
 
 		/*
 		 * 2008/02/01 --- issue: [ 1884112 ] When Updating TreeModel, throws a IndexOutOfBoundsException
@@ -1452,7 +1555,7 @@ public class Tree extends MeshElement {
 	private static Treeitem getChildTreeitem(Treechildren tc, int i) {
 		if (tc == null)
 			return null;
-		List<Component> cs = tc.getChildren();
+		List<? extends Component> cs = tc.getChildren();
 		return i < 0 || i >= cs.size() ? null : (Treeitem) cs.get(i);
 	}
 	/*
@@ -1669,44 +1772,115 @@ public class Tree extends MeshElement {
 			ipath[j] = path.get(j);
 		return ipath;
 	}
+	
+	private void renderChildren0(Renderer renderer, Treechildren parent, Treeitem ti,
+			Object childNode, int i) throws Throwable {
+		renderer.render(ti, childNode, i);
+		Object v = ti.getAttribute("org.zkoss.zul.model.renderAs");
+		if (v != null) {//a new item is created to replace the existent one
+			(ti = (Treeitem) v).setOpen(false);
+		}
+		ti.setRendered(true);
+
+		// B60-ZK-767: handle selected/open state here, as it might be replaced
+		int[] path = null;
+		boolean isLeaf = childNode != null && _model.isLeaf(childNode);
+		if (_model instanceof TreeSelectableModel) {
+			TreeSelectableModel model = (TreeSelectableModel) _model;
+			if (!model.isSelectionEmpty() && 
+					getSelectedCount() != model.getSelectionCount() &&
+					model.isPathSelected(path = getPath0(parent, i)))
+				addItemToSelection(ti);
+		}
+		if (_model instanceof TreeOpenableModel) {
+			TreeOpenableModel model = (TreeOpenableModel) _model;
+			if (!model.isOpenEmpty()) {
+				if (!isLeaf) {
+					if (path == null)
+						path = getPath0(parent, i);
+					ti.setOpen(model.isPathOpened(path));
+				}
+			}
+		}
+		if (!isLeaf && ti.getTreechildren() == null) {
+			Treechildren tc = new Treechildren();
+			tc.setParent(ti);
+		}
+	}
 	/*
 	 * Renders the direct children for the specified parent
 	 */
 	private void renderChildren(Renderer renderer, Treechildren parent,
 	Object node) throws Throwable {
+		final int initSize = initRodSize();
 		for (int i = 0, j = _model.getChildCount(node); i < j; i++) {
 			Treeitem ti = newUnloadedItem();
 			ti.setParent(parent);
+			if (initSize >= 0 && i >= initSize) {
+				ti.appendChild(new Treerow());
+				ti.getTreerow().appendChild(new Treecell());
+				continue;
+			}
 			Object childNode = _model.getChild(node, i);
-			renderer.render(ti, childNode, i);
-			Object v = ti.getAttribute("org.zkoss.zul.model.renderAs");
-			if (v != null) //a new item is created to replace the existent one
-				(ti = (Treeitem) v).setOpen(false);
-			// B60-ZK-767: handle selected/open state here, as it might be replaced
-			int[] path = null;
-			boolean isLeaf = childNode != null && _model.isLeaf(childNode);
-			if (_model instanceof TreeSelectableModel) {
-				TreeSelectableModel model = (TreeSelectableModel) _model;
-				if (!model.isSelectionEmpty() && 
-						getSelectedCount() != model.getSelectionCount() &&
-						model.isPathSelected(path = getPath0(parent, i)))
-					addItemToSelection(ti);
-			}
-			if (_model instanceof TreeOpenableModel) {
-				TreeOpenableModel model = (TreeOpenableModel) _model;
-				if (!model.isOpenEmpty()) {
-					if (!isLeaf) {
-						if (path == null)
-							path = getPath0(parent, i);
-						ti.setOpen(model.isPathOpened(path));
-					}
-				}
-			}
-			if (!isLeaf && ti.getTreechildren() == null) {
-				Treechildren tc = new Treechildren();
-				tc.setParent(ti);
-			}
+			renderChildren0(renderer, parent, ti, childNode, i);
 		}
+	}
+
+	/** 
+	 * Returns the number of rows to preload when receiving the rendering
+	 * request from the client.
+	 * <p>
+	 * Default: 50. (since 7.0.0)
+	 * <p>
+	 * It is used only if live data ({@link #setModel(ListModel)} and not paging
+	 * ({@link #getPagingChild}.
+	 */
+	private int preloadSize() {
+		final String size = (String) getAttribute("pre-load-size");
+		int sz = size != null ? Integer.parseInt(size) : _preloadsz;
+		
+		if ((sz = Utils.getIntAttribute(this, 
+				"org.zkoss.zul.tree.preloadSize", sz, true)) < 0)
+			throw new UiException("nonnegative is required: " + sz);
+		return sz;
+	}
+
+	/** 
+	 * Returns Specifies how many pages (of treeitems) to keep rendered in memory
+	 *  (on the server side) when navigating the tree using pagination.
+	 *  <p>
+	 * Default: 1. (Since 7.0.0)
+	 * <p>
+	 * It is used only if live data ({@link #setModel(ListModel)} and in paging mold
+	 * ({@link #getPagingChild}.
+	 */
+	private int maxRodPageSize() {
+		if (WebApps.getFeature("ee")) {
+			 return Utils.getIntAttribute(this, "org.zkoss.zul.tree.maxRodPageSize",
+						INIT_LIMIT, true);
+		}
+		return -1;
+	}
+	/** 
+	 * Returns the number of items rendered when the Tree first render.
+	 *  <p>
+	 * Default: 50. (Since 7.0.0)
+	 * <p>
+	 * It is used only if live data ({@link #setModel(ListModel)} and not paging
+	 * ({@link #getPagingChild}.
+	 */
+	private int initRodSize() {
+		if (WebApps.getFeature("ee")) {
+			 final int sz = Utils.getIntAttribute(this, "org.zkoss.zul.tree.initRodSize",
+						INIT_LIMIT, true);
+			 if (inPagingMold()) {
+				 if (getPageSize() < sz) {
+					 return getPageSize();
+				 }
+			 }
+			 return sz;
+		}
+		return -1;
 	}
 	private Treeitem newUnloadedItem() {
 		Treeitem ti = new Treeitem();
@@ -1830,7 +2004,7 @@ public class Tree extends MeshElement {
 				try {
 					item.setLabel(Exceptions.getMessage(ex));
 				} catch (Throwable t) {
-					log.error(t);
+					log.error("", t);
 				}
 				throw ex;
 			}
@@ -1856,7 +2030,7 @@ public class Tree extends MeshElement {
 				try {
 					item.setLabel(Exceptions.getMessage(ex));
 				} catch (Throwable t) {
-					log.error(t);
+					log.error("", t);
 				}
 				throw ex;
 			}
@@ -2077,7 +2251,7 @@ public class Tree extends MeshElement {
 			return null;
 		// Start from root-Tree
 		Treeitem ti = null;
-		List<Component> children = this.getTreechildren().getChildren();
+		List<? extends Component> children = this.getTreechildren().getChildren();
 		/*
 		 * Go through each stop in path and render corresponding treeitem
 		 */
@@ -2290,6 +2464,56 @@ public class Tree extends MeshElement {
 			final Map<String, Object> data = request.getData();
 			_anchorTop = AuRequests.getInt(data, "top", 0);
 			_anchorLeft = AuRequests.getInt(data, "left", 0);
+		} else if (cmd.equals(Events.ON_RENDER)) {
+			final RenderEvent<Treeitem> event = RenderEvent.getRenderEvent(request);
+			final Set<Treeitem> items = event.getItems();
+
+			int cnt = items.size();
+			if (cnt == 0) return; //nothing to do
+			
+			int preloadsz = preloadSize();
+			
+			final Renderer renderer = new Renderer();
+			try {
+				Treeitem maxItem = null;
+				int maxIndex = -1;
+				for (Treeitem ti : items) {
+					if (ti.isRendered())
+						continue;
+					int i = ti.getIndex();
+					if (maxItem == null) {
+						maxItem = ti;
+						maxIndex = i;
+					}
+					if (i > maxIndex) {
+						maxItem = ti;
+						maxIndex = i;
+					}
+					
+					ti.getChildren().clear();
+					Treechildren parent = (Treechildren) ti.getParent();
+					Object childNode = getAssociatedNode(ti, this);
+					renderChildren0(renderer, parent, ti, childNode, i);
+				}
+				if (preloadsz > 0) {
+					while (maxItem != null && preloadsz-- > 0) {
+						maxItem = (Treeitem) maxItem.getNextSibling();
+						if (maxItem != null) {
+							if (maxItem.isRendered())
+								continue;
+
+							maxItem.getChildren().clear();
+							Treechildren parent = (Treechildren) maxItem.getParent();
+							Object childNode = getAssociatedNode(maxItem, this);
+							renderChildren0(renderer, parent, maxItem, childNode, maxItem.getIndex());
+						}
+					}
+				}
+			} catch (Throwable ex) {
+				renderer.doCatch(ex);
+			} finally {
+				renderer.doFinally();
+			}
 		} else
 			super.service(request, everError);
 	}
@@ -2297,7 +2521,7 @@ public class Tree extends MeshElement {
 	/** An iterator used by _heads.
 	 */
 	private class Iter implements Iterator<Component> {
-		private final ListIterator<Component> _it = getChildren().listIterator();
+		private final ListIterator<? extends Component> _it = getChildren().listIterator();
 
 		public boolean hasNext() {
 			while (_it.hasNext()) {
