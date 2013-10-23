@@ -16,75 +16,82 @@ Copyright (C) 2005 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.zk.ui.impl;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.LinkedList;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.io.Writer;
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
-import org.zkoss.lang.Objects;
-import org.zkoss.lang.Strings;
-import org.zkoss.lang.Library;
+import javax.servlet.ServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.zkoss.io.Serializables;
 import org.zkoss.lang.ClassResolver;
 import org.zkoss.lang.ImportedClassResolver;
+import org.zkoss.lang.Library;
+import org.zkoss.lang.Objects;
 import org.zkoss.lang.SimpleClassResolver;
-import org.zkoss.util.DualCollection;
+import org.zkoss.lang.Strings;
 import org.zkoss.util.CollectionsX;
-import org.zkoss.util.logging.Log;
-import org.zkoss.io.Serializables;
+import org.zkoss.util.DualCollection;
+import org.zkoss.web.servlet.Servlets;
 import org.zkoss.xel.ExpressionFactory;
-import org.zkoss.xel.XelContext;
-import org.zkoss.xel.VariableResolver;
 import org.zkoss.xel.Function;
 import org.zkoss.xel.FunctionMapper;
 import org.zkoss.xel.FunctionMapperExt;
+import org.zkoss.xel.VariableResolver;
+import org.zkoss.xel.XelContext;
 import org.zkoss.xel.XelException;
 import org.zkoss.xel.util.Evaluators;
-
+import org.zkoss.zk.au.out.AuSetTitle;
 import org.zkoss.zk.mesg.MZk;
-import org.zkoss.zk.ui.Desktop;
-import org.zkoss.zk.ui.Richlet;
-import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.Component;
-import org.zkoss.zk.ui.Executions;
-import org.zkoss.zk.ui.Execution;
+import org.zkoss.zk.scripting.HierachicalAware;
+import org.zkoss.zk.scripting.Interpreter;
+import org.zkoss.zk.scripting.InterpreterNotFoundException;
+import org.zkoss.zk.scripting.Interpreters;
+import org.zkoss.zk.scripting.SerializableAware;
 import org.zkoss.zk.ui.AbstractPage;
+import org.zkoss.zk.ui.Component;
+import org.zkoss.zk.ui.Desktop;
+import org.zkoss.zk.ui.Execution;
+import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.ui.Richlet;
 import org.zkoss.zk.ui.UiException;
+import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.metainfo.PageDefinition;
-import org.zkoss.zk.ui.metainfo.LanguageDefinition;
+import org.zkoss.zk.ui.ext.Includer;
+import org.zkoss.zk.ui.ext.Scope;
+import org.zkoss.zk.ui.ext.ScopeListener;
+import org.zkoss.zk.ui.ext.Scopes;
 import org.zkoss.zk.ui.metainfo.ComponentDefinition;
 import org.zkoss.zk.ui.metainfo.ComponentDefinitionMap;
 import org.zkoss.zk.ui.metainfo.DefinitionNotFoundException;
+import org.zkoss.zk.ui.metainfo.LanguageDefinition;
+import org.zkoss.zk.ui.metainfo.PageDefinition;
 import org.zkoss.zk.ui.metainfo.ZScript;
-import org.zkoss.zk.ui.util.Condition;
-import org.zkoss.zk.ui.util.PageSerializationListener;
-import org.zkoss.zk.ui.util.PageActivationListener;
-import org.zkoss.zk.ui.ext.Includer;
-import org.zkoss.zk.ui.ext.Scope;
-import org.zkoss.zk.ui.ext.Scopes;
-import org.zkoss.zk.ui.ext.ScopeListener;
 import org.zkoss.zk.ui.sys.Attributes;
+import org.zkoss.zk.ui.sys.ComponentCtrl;
+import org.zkoss.zk.ui.sys.DesktopCtrl;
 import org.zkoss.zk.ui.sys.ExecutionCtrl;
 import org.zkoss.zk.ui.sys.ExecutionsCtrl;
-import org.zkoss.zk.ui.sys.WebAppCtrl;
-import org.zkoss.zk.ui.sys.DesktopCtrl;
-import org.zkoss.zk.ui.sys.PageCtrl;
 import org.zkoss.zk.ui.sys.PageConfig;
-import org.zkoss.zk.ui.sys.ComponentCtrl;
-import org.zkoss.zk.ui.sys.UiEngine;
+import org.zkoss.zk.ui.sys.PageCtrl;
 import org.zkoss.zk.ui.sys.PageRenderer;
-import org.zkoss.zk.au.out.AuSetTitle;
-import org.zkoss.zk.scripting.*;
+import org.zkoss.zk.ui.sys.UiEngine;
+import org.zkoss.zk.ui.sys.WebAppCtrl;
+import org.zkoss.zk.ui.util.Condition;
+import org.zkoss.zk.ui.util.PageActivationListener;
+import org.zkoss.zk.ui.util.PageSerializationListener;
 
 /**
  * An implementation of {@link Page} and {@link PageCtrl}.
@@ -105,7 +112,7 @@ import org.zkoss.zk.scripting.*;
  * @author tomyeh
  */
 public class PageImpl extends AbstractPage implements java.io.Serializable {
-	private static final Log log = Log.lookup(PageImpl.class);
+	private static final Logger log = LoggerFactory.getLogger(PageImpl.class);
     private static final long serialVersionUID = 20110726L;
 
 	/** The component that includes this page, or null if not included. */
@@ -706,12 +713,12 @@ public class PageImpl extends AbstractPage implements java.io.Serializable {
 					try {
 						ip.destroy();
 					} catch (Throwable ex) {
-						log.warning("Failed to destroy "+ip, ex);
+						log.warn("Failed to destroy "+ip, ex);
 					}
 				}
 			}
 		} catch (Throwable ex) { //avoid racing
-			log.warning("Failed to clean up interpreters of "+this, ex);
+			log.warn("Failed to clean up interpreters of "+this, ex);
 		}
 
 		//theoretically, the following is not necessary, but, to be safe...
@@ -801,11 +808,22 @@ public class PageImpl extends AbstractPage implements java.io.Serializable {
 		if (!au && !exec.isIncluded()
 		&& ((ctl=ExecutionsCtrl.getPageRedrawControl(exec)) == null
 			|| "desktop".equals(ctl))) {
-			if (!au && shallIE7Compatible())
+			boolean ie7compat;
+			if (!au && ((ie7compat = shallIE7Compatible()) || !shallDisableAutoCompatible()))
 				try {
 					if (exec.getBrowser("ie") >= 8
-					&& !exec.containsResponseHeader("X-UA-Compatible"))
-						exec.setResponseHeader("X-UA-Compatible", "IE=EmulateIE7");
+					&& !exec.containsResponseHeader("X-UA-Compatible")) {
+						if (ie7compat) {
+							exec.setResponseHeader("X-UA-Compatible", "IE=EmulateIE7");
+						} else {
+							double[] ieCompatibilityInfo = Servlets.getIECompatibilityInfo((ServletRequest) exec.getNativeRequest());
+							if(ieCompatibilityInfo != null) {
+								if(ieCompatibilityInfo[0] != ieCompatibilityInfo[2]) {
+									exec.addResponseHeader("X-UA-Compatible", "IE=" + (int)ieCompatibilityInfo[2]);
+								}
+							}
+						}
+					}
 				} catch (Throwable ex) { //ignore (it might not be allowed)
 				}
 
@@ -862,13 +880,20 @@ public class PageImpl extends AbstractPage implements java.io.Serializable {
 				exec.removeAttribute(Attributes.PAGE_RENDERING);
 		}
 	}
+	private static Boolean _ie7compat;
+	private static Boolean _ieAutoCompat;
 	private static boolean shallIE7Compatible() {
 		if (_ie7compat == null)
 			_ie7compat = Boolean.valueOf("true".equals(
 				Library.getProperty("org.zkoss.zk.ui.EmulateIE7")));
 		return _ie7compat.booleanValue();
 	}
-	private static Boolean _ie7compat;
+	private static boolean shallDisableAutoCompatible() {
+		if (_ieAutoCompat == null)
+			_ieAutoCompat = Boolean.valueOf("true".equals(
+				Library.getProperty("org.zkoss.zk.ui.IEAutoCompatible.disabled")));
+		return _ieAutoCompat.booleanValue();
+	}
 
 	public void interpret(String zslang, String script, Scope scope) {
 		if (script != null && script.length() > 0) //optimize for better performance

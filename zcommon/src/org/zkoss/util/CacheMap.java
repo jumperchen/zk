@@ -66,7 +66,7 @@ import org.zkoss.lang.Objects;
  */
 public class CacheMap<K,V> implements Map<K,V>, Cache<K,V>, java.io.Serializable, Cloneable {
 	private static final long serialVersionUID = 20070907L;
-	//private static final Log log = Log.lookup(CacheMap.class);
+	//private static final Logger log = LoggerFactory.getLogger(CacheMap.class);
 
 	/** The map to store the mappings. */
 	private Map<K, Value<V>> _map; //it is OK to serialized
@@ -192,8 +192,7 @@ public class CacheMap<K,V> implements Map<K,V>, Cache<K,V>, java.io.Serializable
 	 * @see #shallExpunge
 	 */
 	protected int canExpunge(int size, Value<V> v) {
-		//Bug ZK-1841: current desktopCache size should also check if equal to max desktop per session size
-		return size >= getMaxSize()
+		return size > getMaxSize()
 			|| (System.currentTimeMillis() - v.access) > getLifetime() ?
 			(EXPUNGE_YES|EXPUNGE_CONTINUE): (EXPUNGE_NO|EXPUNGE_STOP);
 	}
@@ -424,8 +423,9 @@ public class CacheMap<K,V> implements Map<K,V>, Cache<K,V>, java.io.Serializable
 		return false;
 	}
 	public V put(K key, V value) {
-		tryExpunge();
 		final Value<V> v = _map.put(key, new Value<V>(value));
+		//Bug ZK-1841: current desktopCache size should also check if equal to max desktop per session size
+		tryExpunge();
 		return v != null ? v.value: null;
 	}
 	public void putAll(java.util.Map<? extends K,? extends V> map) {

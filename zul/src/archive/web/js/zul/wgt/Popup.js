@@ -185,8 +185,12 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 					
 				if (ref) {
 					var refn = zul.Widget.isInstance(ref) ? ref.$n() : ref;
-					pos = position;
-					dim = zk(refn).dimension(true);
+					// B65-ZK-1934: Make sure refn is not null
+					if (refn) {
+						pos = position;
+						dim = zk(refn).dimension(true);
+					} else 
+						return {pos: position};
 				}
 			} else
 				return {pos: position};
@@ -241,16 +245,18 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 		this.setVisible(false);
 		
 		var node = this.$n();
-		
-		if (zk.ie) { // re-create dom element to remove :hover state style
-			this.replaceHTML(node);
-		}
-		
 		zk(node).undoVParent();
 		zWatch.fireDown('onVParent', this);
 
 		this.setFloating_(false);
 		if (opts && opts.sendOnOpen) this.fire('onOpen', {open:false});
+		
+		var that = this;
+		
+		setTimeout(function() {
+			if (zk.ie) // re-create dom element to remove :hover state style
+				that.replaceHTML(node); // see also ZK-1216, ZK-1124, ZK-318
+		}, 50);
 	},
 	onFloatUp: function(ctl){
 		if (!this.isVisible()) 

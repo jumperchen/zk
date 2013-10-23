@@ -112,7 +112,7 @@ it will be useful, but WITHOUT ANY WARRANTY.
 			setTimeout(showprgbInit, 10);
 	}
 	function showprgb() { //When passed to FF's setTimeout, 1st argument is not null
-		_showprgb();
+		_showprgb(zk.processMask);
 	}
 	function _showprgb(mask, icon) {
 		var $jq;
@@ -1281,26 +1281,6 @@ zk.log('value is", value);
 	function _ver(ver) {
 		return parseFloat(ver) || ver;
 	}
-	function _setCookie(name, value, exdays) {
-		var exdate = new Date();
-		exdate.setDate(exdate.getDate() + exdays);
-		var value = escape(value) + ((exdays == null) ? '' : '; expires=' + exdate.toUTCString());
-		document.cookie = name + '=' + value + ';path=/';
-	}
-	function _getCookie(name) {
-		var cookies = document.cookie.split(';'),
-			len = cookies.length,
-			value = 0;
-		for (var i = 0, c, j; i < len; i++) {
-			c = cookies[i];
-			j = c.indexOf('=');
-			if (name == jq.trim(c.substr(0, j))) {
-				value = zk.parseInt(jq.trim(c.substr(j+1)));
-				break;
-			}
-		}
-		return value;
-	}
 
 	// jQuery 1.9 remove the jQuery.browser
 	jq.uaMatch = function( ua ) {
@@ -1382,15 +1362,6 @@ zk.log('value is", value);
 			zk.ie10_ = zk.ie == 10;
 			bodycls = 'ie ie' + Math.floor(zk.ie);
 			zk.vendor = 'ms';
-			
-			// ZK-1878: IE Compatibility View issue when using Meta tag with IE=edge
-			var v = _getCookie('zkie-compatibility');
-			if (zk.iex != zk.ie || (v && v != zk.ie)) {
-				if (v != zk.ie) {
-					_setCookie('zkie-compatibility', zk.ie, 365*10);
-					window.location.reload();
-				}
-			}
 		} else {
 			if (zk.webkit)
 				bodycls = 'webkit webkit' + Math.floor(zk.webkit);
@@ -1666,14 +1637,14 @@ zk._Erbx = zk.$extends(zk.Object, { //used in HTML tags
 			click = zk.mobild ? ' ontouchstart' : ' onclick',
 			// Use zUtl.encodeXML -- Bug 1463668: security
  			html = ['<div class="z-error" id="', id, '">',
- 			        '<div class="messagecontent"><div class="messages">',
- 			        zUtl.encodeXML(msg, {multiline : true}), '</div></div>',
- 			        '<div id="', id, '-p"><div class="errornumbers">',
- 					'<i class="z-icon-warning-sign"/>&nbsp;', ++_errcnt, ' Errors</div>',
+ 			        '<div id="', id, '-p">',
+ 			        '<div class="errornumbers">', ++_errcnt, ' Errors</div>',
  					'<div class="button"', click, '="zk._Erbx.remove()">',
  					'<i class="z-icon-remove"/></div>',
  					'<div class="button"', click, '="zk._Erbx.redraw()">',
- 					'<i class="z-icon-refresh"/></div></div></div>'];
+ 					'<i class="z-icon-refresh"/></div></div>',
+ 					'<div class="messagecontent"><div class="messages">',
+ 			        zUtl.encodeXML(msg, {multiline : true}), '</div></div></div>'];
 
 		jq(document.body).append(html.join(''));
 		_erbx = this;
@@ -1705,9 +1676,9 @@ zk._Erbx = zk.$extends(zk.Object, { //used in HTML tags
 
 		var id = _erbx.id;
 		jq('#' + id + ' .errornumbers')
-			.html('<i class="z-icon-warning-sign"/>&nbsp;'+ ++_errcnt + ' Errors');
+			.html(++_errcnt + ' Errors');
 		jq('#' + id + ' .messages')
-			.prepend('<div class="newmessage">' + msg + '</hr></div>');
+			.append('<div class="newmessage">' + msg + '</hr></div>');
 		jq('#' + id + ' .newmessage')
 			.removeClass('newmessage').addClass('message').slideDown(600)
 	},

@@ -27,9 +27,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.lang.Library;
 import org.zkoss.lang.Strings;
-import org.zkoss.util.logging.Log;
 import org.zkoss.util.resource.Locators;
 import org.zkoss.web.servlet.Servlets;
 import org.zkoss.web.theme.StandardTheme;
@@ -116,11 +117,12 @@ public class ThemeFns {
 					+ grad(direction, getBrowser(), colors.split(";"));
 		else {
 			String[] cols = colors.split(";");
-			StringBuilder sb = new StringBuilder("\tbackground:").append(grad(
-					direction, Browser.W3C, cols));
+			StringBuilder sb = new StringBuilder();
 			if (temp != Browser.Old_IE)
 				sb.append("\tbackground:");
-			return sb.append(grad(direction, temp, cols)).toString();
+			sb.append(grad(direction, temp, cols));
+			sb.append("\tbackground:").append(grad(direction, Browser.W3C, cols));
+			return sb.toString();
 		}
 	}
 
@@ -214,7 +216,7 @@ public class ThemeFns {
 			} catch (UnsupportedEncodingException e) {
 				result = Base64.encodeBase64String(result.getBytes());
 			}
-			result = "url(data:image/svg+xml;base64," + result + ")";
+			result = "url(data:image/svg+xml;base64," + result + ");";
 		}
 		
 		return result;
@@ -435,8 +437,8 @@ public class ThemeFns {
 	}
 	
 	private static void log(String msg) {
-		Log log = Log.lookup("global");
-		if (log.errorable()) log.error(msg);
+		Logger log = LoggerFactory.getLogger("global");
+		if (log.isErrorEnabled()) log.error(msg);
 		else System.err.println(msg);
 	}
 	/**
@@ -471,7 +473,7 @@ public class ThemeFns {
 		IE("-ms-", "IE10+"),
 		IE9("-ms-", "IE9"),
 		Old(null, null),
-		Old_IE(null, "IE6-9"),
+		Old_IE(null, "IE6-8"),
 		Old_WebKit("-webkit-", "Chrome,Safari4+");
 
 		private final String _template;
@@ -482,10 +484,10 @@ public class ThemeFns {
 
 		Browser(String prefix, String browser) {
 			_prefix = prefix;
-			if ("IE6-9".equals(browser)) {
+			if ("IE6-8".equals(browser)) {
 				_template = new StringBuilder(
 						"\tbackground: #FFFFFF;\tfilter: progid:DXImageTransform.Microsoft.gradient( startColorstr='%1$s',")
-						.append(" endColorstr='%2$s',GradientType=%5$s ); /* IE6-9 */\n")
+						.append(" endColorstr='%2$s',GradientType=%5$s ); /* IE6-8 */\n")
 						.toString();
 			} else if ("IE9".equals(browser)) {
 				_template = new StringBuilder(

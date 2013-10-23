@@ -23,7 +23,7 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		if ($prev.length) {
 			ps = $prev[0].style;
 			// ZK-700 ignore prev if not displayed
-			if (ps.display == 'none')
+			if (!zk($prev[0]).isRealVisible()) // B65-ZK-1925: Use isRealVisible() to determine it is visible or not
 				return pos;
 			else {
 				zs = $zkc[0].style;
@@ -52,6 +52,12 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		var offset = zkc.revisedOffset();
 		pos[0] = offset[0] - pos[0];
 		pos[1] = offset[1] - pos[1];
+		
+		// 3298164: should not see red area at the bottom of listbox
+		if (zk.ie10_) {
+			pos[0] = Math.round(pos[0]);
+			pos[1] = Math.round(pos[1]);
+		}
 		
 		// revert the values
 		zk.copy(zs, coldVal);
@@ -336,8 +342,10 @@ zFlex = { //static methods
 					if (!zkpOffset)
 						zkpOffset = zkp.revisedOffset();
 					var size = _getTextSize(zkc, zkp, zkpOffset);
-					wdh -= size[0];
-					hgh -= size[1];
+					if (!cwgt || !cwgt.isExcludedHflex_()) // fixed ZK-1706 sideeffect 
+						wdh -= size[0];
+					if (!cwgt || !cwgt.isExcludedVflex_()) // fixed ZK-1706 sideeffect for B60-ZK-917.zul
+						hgh -= size[1];
 				}
 				//horizontal size
 				if (cwgt && cwgt._nhflex) {
