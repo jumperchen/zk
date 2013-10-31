@@ -89,7 +89,12 @@ zjq = function (jq) { //ZK extension
 				top = ioft[1] - ooft[1] +
 						(outer == (zk.webkit ? document.body : document.body.parentNode)
 								? 0 : outer.scrollTop),
+				left = ioft[0] - ooft[0] +
+						(outer == (zk.webkit ? document.body : document.body.parentNode)
+								? 0 : outer.scrollLeft),
 				ih = info ? info.h : inner.offsetHeight,
+				iw = info ? info.w : inner.offsetWidth,
+				right = left + iw,
 				bottom = top + ih,
 				updated;
 			//for fix the listbox(livedate) keydown select always at top
@@ -100,16 +105,27 @@ zjq = function (jq) { //ZK extension
 				outer.scrollTop = !info ? bottom : bottom - (outer.clientHeight + (inner.parentNode == outer ? 0 : outer.scrollTop));
 				updated = true;
 			}
+			
+			// ZK-1924:	scrollIntoView can also adjust horizontal scroll position
+			if (outer.scrollLeft > left) {
+				outer.scrollLeft = left;
+				updated = true;
+			} else if (right > outer.clientWidth + outer.scrollLeft) {
+				outer.scrollLeft = !info ? right : right - (outer.clientWidth + (inner.parentNode == outer ? 0 : outer.scrollLeft));
+				updated = true;
+			}
+			
 			if (updated || !info) {
 				if (!info)
 					info = {
 						oft: ioft,
 						h: inner.offsetHeight,
+						w: inner.offsetWidth,
 						el: inner
 					};
 				else info.oft = zk(info.el).revisedOffset();
 			}
-			outer.scrollTop = outer.scrollTop;
+			
 			return info; 
 		}
 	}
@@ -1564,15 +1580,16 @@ jq(el).zk.center(); //same as 'center'
 				} else
 					p.appendChild(el);
 				
-				var cf, p;
+				var cf, p, a;
 				// ZK-851
 				if ((zk.ff || zk.opera) && (cf = zk._prevFocus) && 
 					(p = zk.Widget.$(el)) && zUtl.isAncestor(p, cf)) { 
 					if (cf.getInputNode)
 						jq(cf.getInputNode()).trigger('blur');
-					
-					// ZK-1324: Trendy button inside bandbox popup doesn't lose focus when popup is closed
-					if (cf.$instanceof(zul.wgt.Button))
+					else if ((a = cf.$n('a')) // ZK-1955
+							&& jq.nodeName(a, 'button', 'input', 'textarea', 'a', 'select', 'iframe'))
+						jq(a).trigger('blur');
+					else if (cf.$instanceof(zul.wgt.Button)) // ZK-1324: Trendy button inside bandbox popup doesn't lose focus when popup is closed
 						jq(cf.$n('btn') || cf.$n()).trigger('blur');
 				}
 			}
