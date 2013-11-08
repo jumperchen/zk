@@ -147,6 +147,8 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 		}
 		ref = zk.Widget.$(ref); // just in case, if ref is not a kind of zul.Widget.
 		if (opts && opts.sendOnOpen) this.fire('onOpen', {open: true, reference: ref});
+		//add extra CSS class for easy customize
+		jq(node).addClass(this.$s('open'));
 	},
 	/** Returns whether to instantiate a stackup when {@link #open}
 	 * is called.
@@ -257,11 +259,19 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 			if (zk.ie) // re-create dom element to remove :hover state style
 				that.replaceHTML(node); // see also ZK-1216, ZK-1124, ZK-318
 		}, 50);
+		//remove extra CSS class
+		jq(node).removeClass(this.$s('open'));
 	},
 	onFloatUp: function(ctl){
 		if (!this.isVisible()) 
 			return;
 		var wgt = ctl.origin;
+		
+		// F70-ZK-2007: If popup belongs to widget's ascendant then return
+		for (w = wgt; w; w= w.parent) {
+			if (this._equalsPopId(w._popup) || this._equalsPopId(w._context))
+				return;
+		}
 		
 		for (var floatFound; wgt; wgt = wgt.parent) {
 			if (wgt == this) {
@@ -274,6 +284,30 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 			floatFound = floatFound || wgt.isFloating_();
 		}
 		this.close({sendOnOpen:true});
+	},
+	// F70-ZK-2007: Check if widget's popup id equals to popup
+	_equalsPopId: function(txt) {
+		if (txt == null)
+			return false;
+		// parse popup id from params 
+		var index = txt.indexOf(','),
+			start = txt.indexOf('='),
+			t = txt,
+			id;
+		if (start != -1)
+			t = txt.substring(0, txt.substring(0, start).lastIndexOf(','));
+		
+		if (index != -1) {
+			id = t.substring(0, index).trim();
+		} else {
+			id = txt.trim();
+		}
+		// If param id is 'uuid(an_uuid)', when compare it with uuid
+		if (id.startsWith('uuid(') && id.endsWith(')')) {
+			return id.substring(5, id.length - 1) == this.uuid;
+		} else {
+			return id == this.id;
+		}
 	},
 	bind_: function () {
 		this.$supers(zul.wgt.Popup, 'bind_', arguments);
