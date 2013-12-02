@@ -16,39 +16,44 @@ Copyright (C) 2005 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.zk.ui.impl;
 
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Iterator;
-import java.util.Map;
+import java.io.IOException;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.ListIterator;
-import java.io.Reader;
-import java.io.IOException;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.idom.Document;
 import org.zkoss.util.CollectionsX;
-import org.zkoss.util.logging.Log;
+import org.zkoss.web.servlet.Servlets;
 import org.zkoss.xel.VariableResolver;
 import org.zkoss.xel.VariableResolverX;
 import org.zkoss.xel.XelContext;
-import org.zkoss.web.servlet.Servlets;
-
-import org.zkoss.zk.ui.Sessions;
-import org.zkoss.zk.ui.Session;
-import org.zkoss.zk.ui.Execution;
-import org.zkoss.zk.ui.Desktop;
-import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.au.AuResponse;
+import org.zkoss.zk.au.http.AuRedirect;
 import org.zkoss.zk.ui.Component;
+import org.zkoss.zk.ui.Desktop;
+import org.zkoss.zk.ui.Execution;
+import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.ui.Session;
+import org.zkoss.zk.ui.Sessions;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.metainfo.PageDefinition;
-import org.zkoss.zk.ui.sys.WebAppCtrl;
-import org.zkoss.zk.ui.sys.ExecutionCtrl;
 import org.zkoss.zk.ui.sys.DesktopCtrl;
-import org.zkoss.zk.ui.sys.Visualizer;
-import org.zkoss.zk.ui.sys.UiEngine;
+import org.zkoss.zk.ui.sys.ExecutionCtrl;
 import org.zkoss.zk.ui.sys.ExecutionInfo;
-import org.zkoss.zk.au.AuResponse;
+import org.zkoss.zk.ui.sys.UiEngine;
+import org.zkoss.zk.ui.sys.Visualizer;
+import org.zkoss.zk.ui.sys.WebAppCtrl;
 
 /**
  * A skeletal implementation of {@link Execution}.
@@ -56,7 +61,7 @@ import org.zkoss.zk.au.AuResponse;
  * @author tomyeh
  */
 abstract public class AbstractExecution implements Execution, ExecutionCtrl {
-	private static final Log _zklog = Log.lookup("org.zkoss.zk.log");
+	private static final Logger _zklog = LoggerFactory.getLogger("org.zkoss.zk.log");
 
 	private Desktop _desktop;
 	private Page _curpage;
@@ -348,6 +353,28 @@ abstract public class AbstractExecution implements Execution, ExecutionCtrl {
 	}
 	public void sendRedirect(String uri, String target) {
 		getUiEngine().sendRedirect(uri, target);
+	}
+
+	public void sendRedirect(String uri, boolean respRedirect) {
+		if (!respRedirect) {
+			sendRedirect(uri);
+			return;
+		} else {
+			uri = uri == null ? "" : uri;
+			HttpServletResponse resp = (HttpServletResponse) getNativeResponse();
+			try {
+				String destUrl = encodeURL(uri);
+				String destUrlParam = URLEncoder.encode(destUrl, "utf-8");
+				String updateURI = _desktop.getUpdateURI(AuRedirect.URI_PREFIX
+						+ "?" + AuRedirect.REDIRECT_URL_PARAMETER + "="
+						+ destUrlParam);
+				updateURI = resp.encodeRedirectURL(updateURI);
+				resp.setHeader("Location", updateURI);
+				resp.setStatus(HttpServletResponse.SC_FOUND);
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public Map<?, ?> getArg() {

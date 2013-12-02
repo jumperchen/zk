@@ -128,7 +128,7 @@ public class Selectbox extends HtmlBasedComponent {
 	 * <p>
 	 * Note: changing a render will not cause the selectbox to re-render. If you
 	 * want it to re-render, you could assign the same model again (i.e.,
-	 * setModel(getModel())), or fire an {@link ListDataEvent} event.
+	 * setModel(null) and than setModel(oldModel)), or fire an {@link ListDataEvent} event.
 	 * 
 	 * @param renderer
 	 *            the renderer, or null to use the default.
@@ -445,6 +445,7 @@ public class Selectbox extends HtmlBasedComponent {
 	public void service(org.zkoss.zk.au.AuRequest request, boolean everError) {
 		final String cmd = request.getCommand();
 		if (cmd.equals(Events.ON_SELECT)) {
+			final Object prevSelected = _jsel >= 0 ? _model.getElementAt(_jsel) : null;
 			_jsel = ((Integer) request.getData().get("")).intValue();
 			final Integer index = ((Integer)request.getData().get(""));
 			final Set<Object> selObjs = new LinkedHashSet<Object>();
@@ -455,8 +456,15 @@ public class Selectbox extends HtmlBasedComponent {
 			if (_model != null)
 				getSelectableModel().setSelection(selObjs);;
 			
-			Events.postEvent(new SelectEvent(Events.ON_SELECT, this, null, 
-					selObjs, null, index, 0));
+			if (prevSelected != null) {
+				final Set<Object> prevSet = new LinkedHashSet<Object>(1);
+				prevSet.add(prevSelected);
+				Events.postEvent(new SelectEvent(Events.ON_SELECT, this, null, 
+						prevSet, selObjs, null, index, 0));
+			} else {
+				Events.postEvent(new SelectEvent(Events.ON_SELECT, this, null, 
+						null, selObjs, null, index, 0));
+			}
 		} else // ZK-1053
 			super.service(request, everError);
 	}

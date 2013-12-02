@@ -37,6 +37,7 @@ import org.zkoss.idom.util.IDOMs;
 import org.zkoss.io.Files;
 import org.zkoss.json.JSONArray;
 import org.zkoss.json.JSONObject;
+import org.zkoss.lang.Classes;
 import org.zkoss.lang.Exceptions;
 import org.zkoss.lang.Library;
 import org.zkoss.lang.Strings;
@@ -80,6 +81,7 @@ import org.zkoss.zk.ui.util.URIInfo;
  * @since 5.0.0
  */
 public class WpdExtendlet extends AbstractExtendlet<Object> {
+	
 	public void init(ExtendletConfig config) {
 		init(config, new WpdLoader());
 		config.addCompressExtension("wpd");
@@ -309,7 +311,9 @@ public class WpdExtendlet extends AbstractExtendlet<Object> {
 						move(wc, out);
 						wc.add(jspath, browser);
 					} else {
-						if (browser != null && !Servlets.isBrowser(reqctx.request, browser))
+						if (browser != null && (!Servlets.isBrowser(reqctx.request, browser) ||
+								// F70-ZK-1956: Check whether the script should be loaded or ignored.
+								getScriptManager().isScriptIgnored(reqctx.request, jspath))) 
 							continue;
 						if (!writeResource(reqctx, out, jspath, dir, true))
 							log.error(jspath+" not found, "+el.getLocator()+", "+path);
@@ -331,7 +335,7 @@ public class WpdExtendlet extends AbstractExtendlet<Object> {
 						write(reqctx, out, mtd);
 					}
 			} else {
-				log.warning("Unknown element "+elnm+", "+el.getLocator()+", "+path);
+				log.warn("Unknown element "+elnm+", "+el.getLocator()+", "+path);
 			}
 		}
 		if (zk) {
@@ -359,6 +363,26 @@ public class WpdExtendlet extends AbstractExtendlet<Object> {
 		}
 		return new ByteContent(out.toByteArray(), cacheable);
 	}
+	private ScriptManager getScriptManager() {
+		if (_smanager == null) {
+			synchronized (this) {
+				if (_smanager == null) {
+					String clsnm = Library.getProperty("org.zkoss.zk.ui.http.ScriptManager.class");
+					if (clsnm != null) {
+						try {
+							_smanager = (ScriptManager) Classes.newInstanceByThread(clsnm);
+						} catch (Throwable ex) {
+							log.error("Unable to instantiate "+clsnm, ex);
+						}
+					}
+					if (_smanager == null)
+						_smanager = new ScriptManagerImpl();
+				}
+			}
+		}
+		return _smanager;
+	}
+	private static volatile ScriptManager _smanager;
 	private boolean isWpdContentRequired(String pkg, Element root) {
 		for (LanguageDefinition langdef: LanguageDefinition.getByDeviceType(getDeviceType()))
 			if (langdef.getJavaScriptPackagesWithMerges().contains(pkg))
@@ -668,8 +692,10 @@ public class WpdExtendlet extends AbstractExtendlet<Object> {
 					write(reqctx, out, (MethodInfo)o);
 				} else if (o instanceof String[]) {
 					final String[] inf = (String[])o;
-					if (inf[1] != null) {
-						if (request != null && !Servlets.isBrowser(request, inf[1]))
+					if (inf[1] != null && request != null) {
+						if (!Servlets.isBrowser(request, inf[1]) || 
+								 // F70-ZK-1956: Check whether the script should be loaded or ignored.
+								getScriptManager().isScriptIgnored(reqctx.request, inf[0]))
 							continue;
 					}
 					if (!writeResource(reqctx, out, inf[0], _dir, true))

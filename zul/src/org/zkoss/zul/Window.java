@@ -18,19 +18,22 @@ package org.zkoss.zul;
 
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.lang.Objects;
-import org.zkoss.util.logging.Log;
-import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.Component;
-import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.Executions;
+import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.Execution;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.IdSpace;
+import org.zkoss.zk.ui.Page;
+import org.zkoss.zk.ui.SuspendNotAllowedException;
 import org.zkoss.zk.ui.UiException;
 import org.zkoss.zk.ui.WrongValueException;
-import org.zkoss.zk.ui.SuspendNotAllowedException;
-import org.zkoss.zk.ui.event.*;
-
+import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.event.MaximizeEvent;
+import org.zkoss.zk.ui.event.MinimizeEvent;
+import org.zkoss.zk.ui.event.OpenEvent;
 import org.zkoss.zul.ext.Framable;
 import org.zkoss.zul.impl.XulElement;
 
@@ -67,11 +70,11 @@ import org.zkoss.zul.impl.XulElement;
  * In other words, the popup is hidden before the event is sent to the server.
  * The application cannot prevent the window from being hidden.
  * 
- * <p>Default {@link #getZclass}: z-window-{@link #getMode()}.(since 3.5.0)
+ * <p>Default {@link #getZclass}: z-window.(since 3.5.0)
  * @author tomyeh
  */
 public class Window extends XulElement implements Framable, IdSpace {
-	private static final Log log = Log.lookup(Window.class);
+	private static final Logger log = LoggerFactory.getLogger(Window.class);
 	private static final long serialVersionUID = 20100721L;
 
 	private transient Caption _caption;
@@ -560,7 +563,7 @@ public class Window extends XulElement implements Framable, IdSpace {
 				setVisible(oldvisi);
 			}
 		} catch (Throwable ex) {
-			log.realCauseBriefly("Causing another error", ex);
+			log.error("Causing another error", ex);
 		}
 	}
 
@@ -826,7 +829,7 @@ public class Window extends XulElement implements Framable, IdSpace {
 			//render mode as the last property
 	}
 	public String getZclass() {
-		return _zclass == null ? "z-window-" + getMode() : _zclass;
+		return _zclass == null ? "z-window" : _zclass;
 	}
 
 	//-- Component --//
@@ -908,7 +911,7 @@ public class Window extends XulElement implements Framable, IdSpace {
 		return clone;
 	}
 	private void afterUnmarshal() {
-		for (Iterator it = getChildren().iterator(); it.hasNext();) {
+		for (Iterator<Component> it = getChildren().iterator(); it.hasNext();) {
 			final Object child = it.next();
 			if (child instanceof Caption) {
 				_caption = (Caption)child;

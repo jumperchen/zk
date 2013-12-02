@@ -33,13 +33,13 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.idom.Document;
 import org.zkoss.lang.Objects;
 import org.zkoss.util.CollectionsX;
-import org.zkoss.util.logging.Log;
-import org.zkoss.xel.VariableResolver;
 import org.zkoss.xel.ExpressionFactory;
-
+import org.zkoss.xel.VariableResolver;
 import org.zkoss.zk.au.AuResponse;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.ext.Scope;
@@ -58,8 +58,8 @@ import org.zkoss.zk.xel.Evaluator;
  * @author tomyeh
  */
 public class Components {
-	private static final Log log = Log.lookup(Components.class);
-	private static final Log _zklog = Log.lookup("org.zkoss.zk.log");
+	private static final Logger log = LoggerFactory.getLogger(Components.class);
+	private static final Logger _zklog = LoggerFactory.getLogger("org.zkoss.zk.log");
 
 	protected Components() {}
 
@@ -975,6 +975,10 @@ public class Components {
 
 		public void sendRedirect(String uri, String target) {
 			exec().sendRedirect(uri, target);
+		}
+
+		public void sendRedirect(String uri, boolean respRedirect) {
+			exec().sendRedirect(uri, respRedirect);
 		}
 
 		public Object setAttribute(String name, Object value) {

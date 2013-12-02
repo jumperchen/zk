@@ -159,7 +159,7 @@ zul.inp.Spinner = zk.$extends(zul.inp.NumberInputWidget, {
 		this._stopAutoIncProc();
 
 		var inp = this.getInputNode();
-		if (zk.ie) {
+		if (zk.ie < 11) {
 			var len = inp.value.length;
 			zk(inp).setSelectionRange(len, len);
 		}
@@ -167,8 +167,12 @@ zul.inp.Spinner = zk.$extends(zul.inp.NumberInputWidget, {
 	},
 	_increase: function (is_add){
 		var inp = this.getInputNode(),
-			value = this.coerceFromString_(inp.value), //ZK-1851 convert input value using pattern
-			result = is_add ? (value + this._step) : (value - this._step);
+			value = this.coerceFromString_(inp.value); //ZK-1851 convert input value using pattern
+
+		if (value && value.error)
+			return; //nothing to do if error happens
+		
+		var	result = is_add ? (value + this._step) : (value - this._step);
 		
 		// control overflow
 		if (result > Math.pow(2,31)-1)
@@ -208,6 +212,11 @@ zul.inp.Spinner = zk.$extends(zul.inp.NumberInputWidget, {
 		zul.inp.RoundUtl.doFocus_(this);
 	},
 	doBlur_: function (evt) {
+		if (zk.ie8_) {
+			var btn = this.$n('btn');
+			if (btn && !this._instant && jq('#' + btn.id + ':hover').length > 0)
+				return; //Bug ZK-460: IE 8 only. If still focus on spinner, should not fire onChange.
+		}
 		this.$supers('doBlur_', arguments);
 		zul.inp.RoundUtl.doBlur_(this);
 	},

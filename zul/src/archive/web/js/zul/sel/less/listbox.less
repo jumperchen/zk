@@ -1,4 +1,5 @@
 @import "~./zul/less/_header.less";
+
 //reset table
 .resetTable() {
 	table {
@@ -20,67 +21,72 @@
 	zoom: 1;
 	//listbox header
 	&-header {
-		.resetTable();
-		position: relative;
-		overflow: hidden;
 		width: 100%;
 		<c:if test="${zk.ie != 8}">
-			.verGradient();
+			.verGradient(@baseGradientStart, @baseGradientEnd);
 		</c:if>
+		position: relative;
+		overflow: hidden;
+		.resetTable();
 	}
 	&-header-border {
-		position: relative;
+		border-bottom: 1px solid @meshTitleBorderColor;
 		margin-top: -1px;
-		border-bottom: 1px solid @tableTitleBorderColor;
+		position: relative;
 	}
 	//listbox body
 	&-body {
-		overflow: hidden;
 		position: relative;
+		overflow: hidden;
 		.resetTable();
 	}
 	&-emptybody td {
-		font-family: @baseContentFontFamily;
-		font-size: @fontSizeMedium;
-		color: @disabledColor;
+		.fontStyle(@baseContentFontFamily, @fontSizeMedium, normal, @disabledColor);
 		font-style: italic;
 		text-align: center;
 	}
 	//listbox footer
 	&-footer {
-		overflow: hidden;
-		background: @tableFootBackgroundColor;
 		border-top: 1px solid @baseBorderColor;
+		background: @meshFootBackgroundColor;
+		overflow: hidden;
 		.resetTable();
 	}
 
 	&-odd.z-listitem {
-		background: @tableStripeBackgroundColor;
+		background: @meshStripeBackgroundColor;
 	}
 }
 //listhead
 .z-listhead {
 	th:first-child {
 		border-left: none;
+
+		// B50-3306729: the first header should have border-left when the first column is covered with other header
+		&.z-listhead-border {
+			border-left: 1px solid @meshTitleBorderColor;
+		}
 	}
 	&-bar {
-		border-bottom: 1px solid @tableTitleBorderColor;
+		border-left: 1px solid @meshTitleBorderColor;
+		border-bottom: 1px solid @meshTitleBorderColor;
 	}
 }
 .z-listheader {
+	border-left: 1px solid @meshTitleBorderColor;
+	border-bottom: 1px solid @meshTitleBorderColor;
+	padding: 0;
+	<c:if test="${zk.ie != 8}">
+		.verGradient(@baseGradientStart, @baseGradientEnd);
+	</c:if>
 	background-clip: padding-box;
+	position: relative;
 	overflow: hidden;
 	white-space: nowrap;
-	padding: 0;
-	border-left: 1px solid @tableTitleBorderColor;
-	border-bottom: 1px solid @tableTitleBorderColor;
-	position: relative;
-	<c:if test="${zk.ie != 8}">
-		.verGradient();
-	</c:if>
+	
 	&-hover {
 		<c:if test="${zk.ie != 8}">
-			.verGradient(@tableTitleHoverStart, @tableTitleHoverEnd);
+			.verGradient(@meshTitleHoverStart, @meshTitleHoverEnd);
 		</c:if>
 	}
 	&-sort {
@@ -88,51 +94,49 @@
 			cursor: pointer;
 		}
 		.z-listheader-sorticon {
-			position: absolute;
-			top: -3px;
-			left: 50%;
 			color: @iconColor;
+			position: absolute;
+			top: -7px;
+			left: 50%;
 		}
 	}
 	&-hover .z-listheader-button {
 		display: block;
 	}
 	&-checkable {
-		width: @baseIconWidth;
-		height: @baseIconHeight;
+		.displaySize(inline-block, @baseIconWidth, @baseIconHeight);
 		border: 1px solid @checkedBorderColor;
-		display: inline-block;
-		vertical-align: text-top;
 		background: @checkedBackgroundColor;
+		vertical-align: text-top;
+		
 		.z-listheader-icon {
 			display: none;
 			cursor: default;
 		}
 		&.z-listheader-checked .z-listheader-icon {
-			display: block;
-			line-height: @baseLineHeight;
-			padding-left: 1px;
 			color: @checkedColor;
+			display: block;
+			padding-left: 1px;
+			line-height: @baseLineHeight;
 		}
 	}
 	&-button {
-		display: none;
+		color: @iconColor;
+		.displaySize(none, @baseButtonWidth - 1, @baseBarHeight);
+		border-left: 1px solid darken(@meshTitleHoverStart, 15%);
+		line-height: @baseBarHeight;
+		text-align: center;
 		position: absolute;
-		z-index: 15;
-		cursor: pointer;
 		top: 0;
 		right: 0;
-		width: @baseButtonWidth - 1;
-		height: @baseBarHeight;
-		line-height: @baseBarHeight;
 		text-decoration: none;
-		text-align: center;
-		border-left: 1px solid darken(@tableTitleHoverStart, 15%);
+		cursor: pointer;
+		z-index: 15;
 		.boxShadow('inset 1px 0 #FFFFFF');
-		color: @iconColor;
+		
 		&:hover {
 			<c:if test="${zk.ie != 8}">
-				.verGradient(darken(@tableTitleHoverStart, 5%), darken(@tableTitleHoverEnd, 10%));
+				.verGradient(darken(@meshTitleHoverStart, 5%), darken(@meshTitleHoverEnd, 10%));
 			</c:if>
 		}
 	}
@@ -144,22 +148,22 @@
 }
 //list item and cell
 .z-listitem {
-	background: @tableBackgroundColor;
+	background: @meshBackgroundColor;
+	
 	td:first-child {
 		border-left: none;
 	}
 	//list cell
 	.z-listcell {
-		border-left: 1px solid @tableContentBorderColor;
+		border-left: 1px solid @meshContentBorderColor;
 		overflow: hidden;
 		cursor: pointer;
 	}
 	&:hover {
 		> .z-listcell {
 			<c:if test="${zk.ie != 8}">
-				.verGradient(@tableContentHoverStart, @tableContentHoverEnd);
+				.verGradient(@meshContentHoverStart, @meshContentHoverEnd);
 			</c:if>
-			border-color: @tableContentHoverStart;
 			background-clip: padding-box;
 			position: relative;
 		}
@@ -169,14 +173,13 @@
 	}
 	//check mark
 	&-checkable {
-		width: @baseIconWidth;
-		height: @baseIconHeight;
+		.displaySize(inline-block, @baseIconWidth, @baseIconHeight);
 		border: 1px solid @checkedBorderColor;
-		display: inline-block;
-		vertical-align: text-top;
 		background: @checkedBackgroundColor;
+		vertical-align: text-top;
+		
 		&.z-listitem-radio {
-			.borderRadius(8px);
+			.borderRadius(@baseIconWidth / 2);
 		}
 		.z-listitem-icon {
 			display: none;
@@ -186,10 +189,10 @@
 	//selected list cell
 	&.z-listitem-selected {
 		.z-listcell {
+			border-color: @selectedGradientStart;
 			<c:if test="${zk.ie != 8}">
 				.verGradient(@selectedGradientStart, @selectedGradientEnd);
 			</c:if>
-			border-color: @selectedGradientStart;
 			background-clip: padding-box;
 			position: relative;
 		}
@@ -198,10 +201,10 @@
 		}
 		&:hover {
 			> .z-listcell {
+				border-color: @selectedHoverGradientStart;
 				<c:if test="${zk.ie != 8}">
 					.verGradient(@selectedHoverGradientStart, @selectedHoverGradientEnd);
 				</c:if>
-				border-color: @selectedHoverGradientStart;
 				position: relative;
 			}
 			.z-listcell-content {
@@ -212,18 +215,19 @@
 	//selected check mark
 	&-selected {
 		.z-listitem-icon {
-			display: block;
-			line-height: @baseLineHeight;
-			padding-left: 1px;
 			color: @checkedColor;
-			&.z-icon-ok {} //for checkbox, use font-awesome
+			display: block;
+			padding-left: 1px;
+			line-height: @baseLineHeight;
+			cursor: pointer;
+			
+			&.z-icon-check {} //for checkbox, use font-awesome
 			&.z-icon-radio { //for radio
-				width: 8px;
-				height: 8px;
-				.borderRadius(4px);
-				background: @checkedColor;
-				padding: 0;
+				.size(@baseIconWidth / 2, @baseIconWidth / 2);
+				.borderRadius(@baseIconWidth / 4);
 				margin: 3px;
+				padding: 0;
+				background: @checkedColor;
 			}
 		}
 	}
@@ -248,13 +252,13 @@
 //Group
 .z-listgroup {
 	&-inner {
+		border: 1px solid @meshTitleBorderColor;
+		border-left: none;
+		border-right: none;
 		<c:if test="${zk.ie != 8}">
 			.verGradient(@groupGradientStart, @groupGradientEnd);
 		</c:if>
 		position: relative;
-		border: 1px solid @tableTitleBorderColor;
-		border-left: none;
-		border-right: none;
 		overflow: hidden;
 		
 		.z-listcell-content,
@@ -262,26 +266,45 @@
 			padding: 3px 5px;
 		}
 	}
-	&-icon {
-		display: inline-block;
-		width: @baseIconWidth;
-		height: @baseIconHeight;
-		cursor: pointer;
-		font-size: @baseFontSize;
-		position: relative;
+	//check mark
+	&-checkable {
+		.displaySize(inline-block, @baseIconWidth, @baseIconHeight);
+		border: 1px solid @checkedBorderColor;
+		margin-right: 2px;
+		background: @checkedBackgroundColor;
+		vertical-align: text-top;
+		
+		.z-listgroup-icon {
+			display: none;
+			cursor: default;
+		}
 	}
-	&-icon-open,
-	&-icon-close {
-		display: inline-block;
-		position: absolute;
-		left: 8px;
-		color: @iconColor;
+	//selected check mark
+	&-selected &-checkable {
+		.z-listgroup-icon {
+			.iconFontStyle(@fontSizeMedium, @checkedColor);
+			display: inline-block;
+			padding-right: 2px;
+			line-height: @baseLineHeight;
+			cursor: pointer;
+			
+			&:hover {
+				color: @checkedColor;
+			}
+		}
+	}
+	&-icon {
+		.iconFontStyle(@baseFontSize, @iconColor);
+		.displaySize(inline-block, @baseIconWidth, @baseIconHeight);
+		line-height: @baseIconHeight;
+		text-align: center;
+		vertical-align: text-top;
+		position: relative;
+		cursor: pointer;
+		
 		&:hover {
 			color: @iconHoverColor;
 		}
-	}
-	&-icon-open {
-		left: 5px;
 	}
 }
 .z-listgroupfoot-inner {
@@ -296,12 +319,10 @@
 .z-listgroup-content,
 .z-listgroupfoot-content,
 .z-listfooter-content {
-	font-family: @baseContentFontFamily;
-	font-size: @fontSizeMedium;
-	color: @textColorGrayLight;
-	overflow: hidden;
+	.fontStyle(@baseContentFontFamily, @fontSizeMedium, normal, @textColorGrayLight);
 	padding: 4px 5px;
 	line-height: @baseButtonHeight;
+	overflow: hidden;
 }
 .z-listheader-content {
 	font-weight: bold;
@@ -346,40 +367,61 @@
 	font-size: @fontSizeMedium;
 }
 // IE8
-.ie8 {
+.ie8 { 
 	.z-listbox-header {
-		background: @baseGradientEnd;
+		background: @meshBackgroundColorIE8;
 	}
 	.z-listheader {
 		position: static;
-		background: @baseGradientEnd;
+		background: @meshBackgroundColorIE8;
 		&-hover {
-			background: @tableTitleHoverEnd;
+			background: @meshHoverBackgroundColorIE8;
 		}
 
 		&-button:hover {
-			background: darken(@hoverGradientEnd, 5%);
+			background: darken(@meshHoverBackgroundColorIE8, 3%);
 		}
 	}
 	.z-listitem {
 		&:hover > .z-listcell {
-			background: @hoverGradientEnd;
+			background: @meshHoverBackgroundColorIE8;
 		}
 		&.z-listitem-selected {
 			.z-listcell {
 				position: static;
-				background: @tableContentHoverEnd;
+				background: @meshSelectedBackgroundColorIE8;
 			}
 			&:hover > .z-listcell {
 				position: static;
-				background: @selectedHoverGradientEnd;
+				background: @meshSelectedHoverBackgroundColorIE8;
 			}
+		}
+		// radio icon fallback
+		.z-icon-radio {
+			.displaySize(block, 13px, 13px);
+			.encodeThemeURL(background, '~./zul/img/common/check-sprite.gif', no-repeat);
+			position: relative;
+			top: 2px;
+			left: 2px;
+		}
+		&-radio {
+			border-width: 0;
+			background: transparent;
+
+			.z-icon-radio {
+				background-position: 0 -13px;
+			}
+		}
+		&-selected .z-icon-radio {
+			border-width: 0;
+			margin: 0;
+			background-position: -26px -13px;
 		}
 	}
 	.z-listgroup-inner {
-		background: @groupGradientEnd;
+		background: @meshGroupBackgroundColorIE8;
 	}
 	.z-listgroupfoot-inner {
-		background: average(@groupGradientStart, @groupGradientEnd);
+		background: @meshGroupFooterBackgroundColorIE8;
 	}
 }

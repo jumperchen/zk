@@ -116,16 +116,21 @@ zul.wgt.Button = zk.$extends(zul.LabelImageWidget, {
 		    }, 
 		    function (v) {
 		    	if (this.desktop) {
-	    			this.$n().disabled = v;	
+		    		// ZK-2042: delay the setting when the button's type is submit 
+		    		if(this._type == 'submit')
+		    			setTimeout(function() { this.$n().disabled = v; }, 50);
+		    		else
+		    			this.$n().disabled = v;	
 		    	}
 		    }
 		],
+		/*	 B70-ZK-2031: Use LabelImageWidget's define instead
 		image: function (v) {
 			if (v && this._preloadImage) zUtl.loadImage(v);
 			var n = this.getImageNode();
 			if (n) 
 				n.src = v || '';
-		},
+		},*/
 		/** Returns the tab order of this component.
 		 * <p>Default: -1 (means the same as browser's default).
 		 * @return int
@@ -257,8 +262,8 @@ zul.wgt.Button = zk.$extends(zul.LabelImageWidget, {
 		this.$supers(Button, 'bind_', arguments);
 
 		var n = this.$n();
-		this.domListen_(n, "onFocus", "doFocus_")
-			.domListen_(n, "onBlur", "doBlur_");
+		this.domListen_(n, 'onFocus', 'doFocus_')
+			.domListen_(n, 'onBlur', 'doBlur_');
 
 		if (!this._disabled && this._upload) _initUpld(this);
 	},
@@ -266,8 +271,8 @@ zul.wgt.Button = zk.$extends(zul.LabelImageWidget, {
 		_cleanUpld(this);
 
 		var n = this.$n();
-		this.domUnlisten_(n, "onFocus", "doFocus_")
-			.domUnlisten_(n, "onBlur", "doBlur_");
+		this.domUnlisten_(n, 'onFocus', 'doFocus_')
+			.domUnlisten_(n, 'onBlur', 'doBlur_');
 
 		this.$supers(Button, 'unbind_', arguments);
 	},
@@ -336,7 +341,7 @@ zul.wgt.ADBS = zk.$extends(zk.Object, {
 					var perm;
 					if (perm = ad.charAt(0) == '+')
 						ad = ad.substring(1);
-					ad = "self" == ad ? wgt: wgt.$f(ad);
+					ad = 'self' == ad ? wgt: wgt.$f(ad);
 					//B50-3304877: autodisable and Upload
 					if (ad == wgt) { //backup uploader before disable
 						uplder = wgt._uplder;

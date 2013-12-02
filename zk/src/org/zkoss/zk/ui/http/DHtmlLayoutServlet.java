@@ -16,43 +16,42 @@ Copyright (C) 2005 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.zk.ui.http;
 
-import java.util.logging.Level;
-import java.io.Writer;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
-import java.io.IOException;
+import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServlet;
-import org.zkoss.mesg.Messages;
-import org.zkoss.lang.Exceptions;
-import org.zkoss.util.logging.Log;
 
+import org.slf4j.LoggerFactory;
+import org.zkoss.lang.Exceptions;
+import org.zkoss.mesg.Messages;
 import org.zkoss.web.servlet.Servlets;
 import org.zkoss.web.servlet.http.Https;
-
 import org.zkoss.zk.mesg.MZk;
-import org.zkoss.zk.ui.WebApp;
 import org.zkoss.zk.ui.Desktop;
-import org.zkoss.zk.ui.Page;
-import org.zkoss.zk.ui.Session;
 import org.zkoss.zk.ui.Execution;
+import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.Richlet;
+import org.zkoss.zk.ui.Session;
+import org.zkoss.zk.ui.WebApp;
+import org.zkoss.zk.ui.impl.RequestInfoImpl;
 import org.zkoss.zk.ui.metainfo.PageDefinition;
 import org.zkoss.zk.ui.metainfo.PageDefinitions;
-import org.zkoss.zk.ui.util.Configuration;
-import org.zkoss.zk.ui.util.DesktopRecycle;
-import org.zkoss.zk.ui.sys.UiFactory;
 import org.zkoss.zk.ui.sys.RequestInfo;
-import org.zkoss.zk.ui.sys.WebAppCtrl;
 import org.zkoss.zk.ui.sys.SessionCtrl;
 import org.zkoss.zk.ui.sys.SessionsCtrl;
-import org.zkoss.zk.ui.impl.RequestInfoImpl;
-import org.zkoss.zk.ui.sys.Attributes;
+import org.zkoss.zk.ui.sys.UiFactory;
+import org.zkoss.zk.ui.sys.WebAppCtrl;
+import org.zkoss.zk.ui.util.Configuration;
+import org.zkoss.zk.ui.util.DesktopRecycle;
 
 /**
  * Used to process the request for a ZUML page. Though it is called
@@ -73,19 +72,20 @@ import org.zkoss.zk.ui.sys.Attributes;
  * @author tomyeh
  */
 public class DHtmlLayoutServlet extends HttpServlet {
-	private static final Log log = Log.lookup(DHtmlLayoutServlet.class);
+	private static final org.slf4j.Logger log = LoggerFactory.getLogger(DHtmlLayoutServlet.class);
 
 	private WebManager _webman;
 	private boolean _webmanCreated;
 	private boolean _compress = true;
 
 	//Servlet//
+	@SuppressWarnings("deprecation")
 	public void init() throws ServletException {
 		final ServletConfig config = getServletConfig();
 		String param = config.getInitParameter("log-level");
 		if (param != null && param.length() > 0) {
-			final Level level = Log.getLevel(param);
-			if (level != null) Log.lookup("org.zkoss").setLevel(level);
+			final Level level = org.zkoss.util.logging.Log.getLevel(param);
+			if (level != null)  Logger.getLogger("org.zkoss").setLevel(level);
 			else log.error("Unknown log-level: "+param);
 		}
 
@@ -98,7 +98,7 @@ public class DHtmlLayoutServlet extends HttpServlet {
 				config.getInitParameter("update-uri"), "The update-uri parameter");
 		ctx.setAttribute("org.zkoss.zk.ui.http.update-uri", updateURI); //B65-ZK-1619
 		if (_webman == null) {
-			log.warning("WebManager not initialized. Please check if HttpSessionListener is configured properly.");
+			log.warn("WebManager not initialized. Please check if HttpSessionListener is configured properly.");
 			_webman = new WebManager(ctx, updateURI);
 			_webmanCreated = true;
 		} else {
@@ -267,10 +267,10 @@ public class DHtmlLayoutServlet extends HttpServlet {
 					if (process(sess, request, response, errpg, false))
 						return; //done
 
-					log.warning("The error page not found: "+errpg);
+					log.warn("The error page not found: "+errpg);
 				} catch (IOException ex) { //eat it (connection off)
 				} catch (Throwable ex) {
-					log.warning("Failed to load the error page: "+errpg, ex);
+					log.warn("Failed to load the error page: "+errpg, ex);
 				}
 			}
 		}

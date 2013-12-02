@@ -42,8 +42,9 @@ Copyright (C) 2008 Potix Corporation. All Rights Reserved.
  * @import zul.wgt.Toolbar
  */
 zul.tab.Tabbox = zk.$extends(zul.Widget, {
-	_orient: 'horizontal',
+	_orient: 'top',
 	_tabscroll: true,
+	_maximalHeight: false,
 	/* ZK-1441
 	 * Reference: _sel() in Tab.js, Tabpanel.js
 	 */
@@ -66,7 +67,7 @@ zul.tab.Tabbox = zk.$extends(zul.Widget, {
 		 * Returns the orient.
 		 *
 		 * <p>
-		 * Default: "horizontal".
+		 * Default: "top".
 		 *
 		 * <p>
 		 * Note: only the default mold supports it (not supported if accordion).
@@ -75,10 +76,32 @@ zul.tab.Tabbox = zk.$extends(zul.Widget, {
 		/**
 		 * Sets the orient.
 		 *
-		 * @param String orient
-		 *            either "horizontal" or "vertical".
+		 * @param String orient either "top", "left", "bottom or "right".
+		 * @since 7.0.0 "horizontal" is renamed to "top" and "vertical" is renamed to "left".
 		 */
-		orient: _zkf,
+		orient: function (orient) {
+			if (orient == 'horizontal')
+				this._orient = 'top';
+			else if (orient == 'vertical')
+				this._orient = 'left';
+			this.rerender();
+		},
+		
+		/**
+		 * Returns whether to use maximum height of all tabpanel in initial phase or not.
+		 * <p> 
+		 * Default: false.
+		 * @return boolean
+		 * @since 7.0.0
+		 */
+		/**
+		 * Sets whether to use maximum height of all tabpanel in initial phase or not.
+		 * <p>
+		 * The Client ROD feature will be disabled if it is set to true.
+		 * @param boolean maximalHeight
+		 * @since 7.0.0
+		 */
+		maximalHeight: _zkf,
 		/**
 		 * Returns the spacing between {@link Tabpanel}. This is used by certain
 		 * molds, such as accordion.
@@ -128,26 +151,46 @@ zul.tab.Tabbox = zk.$extends(zul.Widget, {
 	 * @return boolean
 	 */
 	isHorizontal: function() {
-		return this.getOrient().indexOf('horizontal') != -1;
+		var orient = this.getOrient();
+		return 'horizontal' == orient || 'top' == orient || 'bottom' == orient;
 	},
-	isHorizontalTop: function() {
-		return 'horizontal' == this.getOrient();
+	/**
+	 * Returns whether it is the top orientation.
+	 * @return boolean
+	 */
+	isTop: function() {
+		var orient = this.getOrient();
+		return 'horizontal' == orient || 'top' == orient;
 	},
-	isHorizontalBottom: function() {
-		return 'horizontal-bottom' == this.getOrient();
+	/**
+	 * Returns whether it is the bottom orientation.
+	 * @return boolean
+	 */
+	isBottom: function() {
+		return 'bottom' == this.getOrient();
 	},
 	/**
 	 * Returns whether it is a vertical tabbox.
 	 * @return boolean
 	 */
 	isVertical: function() {
-		return this.getOrient().indexOf('vertical') != -1;
+		var orient = this.getOrient();
+		return 'vertical' == orient || 'left' == orient || 'right' == orient;
 	},
-	isVerticalRight: function() {
-		return 'vertical-right' == this.getOrient();
+	/**
+	 * Returns whether it is the right orientation.
+	 * @return boolean
+	 */
+	isRight: function() {
+		var orient = this.getOrient();
+		return 'vertical' == orient || 'left' == orient;
 	},
-	isVerticalLeft: function() {
-		return 'vertical' == this.getOrient();
+	/**
+	 * Returns whether it is the left orientation.
+	 * @return boolean
+	 */
+	isLeft: function() {
+		return 'left' == this.getOrient();
 	},
 	/**
 	 * Returns whether it is in the accordion mold.
@@ -225,6 +268,7 @@ zul.tab.Tabbox = zk.$extends(zul.Widget, {
 		for (var btn, key = ['right', 'left', 'down', 'up'], le = key.length; le--;) 
 			if (btn = this.$n(key[le])) 				
 				this.domListen_(btn, 'onClick', '_doClick', key[le]);
+		this._fixMaxHeight();
 	},
 	unbind_: function () {
 		zWatch.unlisten({onResponse: this});
@@ -362,5 +406,31 @@ zul.tab.Tabbox = zk.$extends(zul.Widget, {
 		this.$supers('setHeight', arguments);
 		if (this.desktop)
 			zUtl.fireSized(this, -1); //no beforeSize
+	},
+	
+	_fixMaxHeight: function() {
+		var tabbox = this;
+		if (tabbox._maximalHeight) {
+			var max = 0,
+				pnls = tabbox.getTabpanels(),
+				fc = pnls.firstChild;
+			
+			for(var c = fc; c; c = c.nextSibling) {
+				var panel = c ? c.getCaveNode() : null;
+				if (!panel) 
+					return;
+				else {
+					var hgh = jq(panel).outerHeight();
+					if (hgh > max)
+						max = hgh;
+				}
+			}
+			
+			for(var c = fc; c; c = c.nextSibling) {
+				var panel = c.getCaveNode();
+				if (panel)
+					panel.style.height = jq.px0(max);
+			}
+		}
 	}
 });

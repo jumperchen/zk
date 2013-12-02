@@ -117,6 +117,23 @@ zul.mesh.HeaderWidget = zk.$extends(zul.LabelImageWidget, {
 		this.$supers(zul.mesh.HeaderWidget, 'bind_', arguments);
 		if (this.parent.isSizable())
 			this._initsz();
+		var mesh = this.getMeshWidget();
+		if (mesh) {
+			var $n = jq(this.$n()),
+				$faker = jq(this.$n('hdfaker')),
+				w = this.getWidth();
+			if (!this.isVisible()) {
+				$n.css('display', '');
+				$faker.css('display', '');
+				$faker.css('visibility', 'hidden');
+				$faker.css('width', zk.chrome ? '0.1px' : '0');
+			} else {
+				$faker.css('visibility', '');
+				if (w) {
+					$faker.css('width', w);
+				}
+			}
+		}
 	},
 	unbind_: function () {
 		if (this._dragsz) {
@@ -145,11 +162,18 @@ zul.mesh.HeaderWidget = zk.$extends(zul.LabelImageWidget, {
 		var tg = evt.domTarget,
 			wgt = zk.Widget.$(tg),
 			n = this.$n(),
-			ofs = this._dragsz ? zk(n).revisedOffset() : false;
-			
+			ofs = this._dragsz ? zk(n).revisedOffset() : false,
+			btn = wgt.$n('btn'),
+			ignoreSort = false;
+		
+		//IE will trigger doClick during closing menupopup
+		if (zk.ie < 11 && btn && !zk(btn).isRealVisible())
+			ignoreSort = true;
+		
 		if (!zk.dragging && (wgt == this || wgt.$instanceof(zul.wgt.Label)) 
 				&& this.isSortable_() && !jq.nodeName(tg, 'input') 
-				&& (!this._dragsz || !this._insizer(evt.pageX - ofs[0]))) {
+				&& (!this._dragsz || !this._insizer(evt.pageX - ofs[0])) 
+				&& !ignoreSort) {
 			this.fire('onSort', 'ascending' != this.getSortDirection()); // B50-ZK-266
 			evt.stop();
 		} else {
@@ -237,7 +261,7 @@ zul.mesh.HeaderWidget = zk.$extends(zul.LabelImageWidget, {
 		if (zkp) {
 			// Bug #3255116
 			if (mw.ebody) {
-				if (zk.ie) { //Related bugs: ZK-890 and ZK-242
+				if (zk.ie < 11) { //Related bugs: ZK-890 and ZK-242
 					if (mw.ebodytbl && !mw.ebodytbl.width) {
 						mw.ebodytbl.width = '100%';
 						// reset the width for IE

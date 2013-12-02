@@ -16,6 +16,8 @@ Copyright (C) 2005 Potix Corporation. All Rights Reserved.
  */
 package org.zkoss.zul;
 
+import static org.zkoss.lang.Generics.cast;
+
 import java.lang.reflect.Method;
 import java.util.AbstractCollection;
 import java.util.AbstractList;
@@ -23,6 +25,7 @@ import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -32,16 +35,15 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.Comparator;
 
-import static org.zkoss.lang.Generics.cast;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.zkoss.io.Serializables;
 import org.zkoss.lang.Classes;
 import org.zkoss.lang.Exceptions;
 import org.zkoss.lang.Library;
 import org.zkoss.lang.Objects;
 import org.zkoss.lang.Strings;
-import org.zkoss.io.Serializables;
-import org.zkoss.util.logging.Log;
 import org.zkoss.zk.au.AuRequests;
 import org.zkoss.zk.ui.AbstractComponent;
 import org.zkoss.zk.ui.Component;
@@ -50,6 +52,7 @@ import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.UiException;
 import org.zkoss.zk.ui.WrongValueException;
+import org.zkoss.zk.ui.event.CheckEvent;
 import org.zkoss.zk.ui.event.CloneableEventListener;
 import org.zkoss.zk.ui.event.Event;
 import org.zkoss.zk.ui.event.EventListener;
@@ -84,6 +87,7 @@ import org.zkoss.zul.impl.XulElement;
  * <li>{@link org.zkoss.zk.ui.event.SelectEvent} is sent when user changes the
  * selection.</li>
  * <li>onAfterRender is sent when the model's data has been rendered.(since 5.0.4)</li>
+ * <li>onCheckSelectAll is sent when user click on selectAll checkbox.(since 6.5.5)</li>
  * </ol>
  *
  * <p>
@@ -263,7 +267,7 @@ public class Listbox extends MeshElement {
 	public static final String LOADING_MODEL = "org.zkoss.zul.loadingModel";
 	public static final String SYNCING_MODEL = "org.zkoss.zul.syncingModel";
 
-	private static final Log log = Log.lookup(Listbox.class);
+	private static final Logger log = LoggerFactory.getLogger(Listbox.class);
 	private static final String ATTR_ON_INIT_RENDER_POSTED = "org.zkoss.zul.onInitLaterPosted";
 	private static final String ATTR_ON_PAGING_INIT_RENDERER_POSTED = "org.zkoss.zul.onPagingInitPosted";
 	private static final int INIT_LIMIT = 50;
@@ -349,6 +353,8 @@ public class Listbox extends MeshElement {
 		
 		// since 6.0.0/5.0.11, B50-ZK-798
 		addClientEvent(Listbox.class, "onAnchorPos", CE_DUPLICATE_IGNORE | CE_IMPORTANT);
+		// since 6.5.5 F65-ZK-2014
+		addClientEvent(Listbox.class, "onCheckSelectAll", CE_DUPLICATE_IGNORE | CE_IMPORTANT);
 	}
 
 	public Listbox() {
@@ -444,8 +450,8 @@ public class Listbox extends MeshElement {
 		return index - (offset < 0 ? 0 : offset);
 	}
 
-	public List<Component> getChildren() {
-		return new Children();
+	public <T extends Component> List<T> getChildren() {
+		return (List<T>) new Children();
 	}
 
 	protected class Children extends AbstractComponent.Children {
@@ -1557,12 +1563,12 @@ public class Listbox extends MeshElement {
 				throw new UiException("Only one frozen child is allowed: "
 						+ this);
 			if (inSelectMold())
-				log.warning("Mold select ignores frozen");
+				log.warn("Mold select ignores frozen");
 		} else if (newChild instanceof Listfoot) {
 			if (_listfoot != null && _listfoot != newChild)
 				throw new UiException("Only one listfoot is allowed: " + this);
 			if (inSelectMold())
-				log.warning("Mold select ignores listfoot");
+				log.warn("Mold select ignores listfoot");
 		} else if (newChild instanceof Paging) {
 			if (_paging != null && _paging != newChild)
 				throw new UiException("Only one paging is allowed: " + this);
@@ -1628,11 +1634,13 @@ public class Listbox extends MeshElement {
 					if (_jsel < 0) {
 						_jsel = newIndex;
 						_selItems.add(newItem);
+						smartUpdateSelection();
 					} else if (_multiple) {
 						if (_jsel > newIndex) {
 							_jsel = newIndex;
 						}
 						_selItems.add(newItem);
+						smartUpdateSelection();
 					} else { // deselect
 						newItem.setSelectedDirectly(false);
 					}
@@ -1774,6 +1782,8 @@ public class Listbox extends MeshElement {
 				if (_jsel == index) {
 					fixSelectedIndex(index);
 				}
+
+				smartUpdateSelection();
 			} else {
 				if (!isLoadingModel() && _jsel >= index) {
 					--_jsel;
@@ -2577,6 +2587,9 @@ public class Listbox extends MeshElement {
 					}
 				}
 			}
+			if (_model.getSize() == 0) { // Bug ZK-1834: model is empty
+				resetDataLoader(true);
+			}
 		}
 	}
 	/** Called when SELECTION_CHANGED is received. */
@@ -2664,7 +2677,7 @@ public class Listbox extends MeshElement {
 				try {
 					item.setLabel(Exceptions.getMessage(ex));
 				} catch (Throwable t) {
-					log.error(t);
+					log.error("", t);
 				}
 				item.setLoaded(true);
 				throw ex;
@@ -3363,6 +3376,7 @@ public class Listbox extends MeshElement {
 			if (_rod && Executions.getCurrent().getAttribute(
 					"zkoss.zul.listbox.onDataLoading."+this.getUuid()) != null) //indicate doing dataloading
 				return; //skip all onSelect event after the onDataLoading
+			final Set<Listitem> prevSeldItems = new LinkedHashSet<Listitem>(_selItems);
 			SelectEvent evt = SelectEvent.getSelectEvent(request, 
 					new SelectEvent.SelectedObjectHandler<Listitem>() {
 				public Set<Object> getObjects(Set<Listitem> items) {
@@ -3372,6 +3386,10 @@ public class Listbox extends MeshElement {
 					for (Listitem i : items)
 						objs.add(_model.getElementAt(i.getIndex()));
 					return objs;
+				}
+
+				public Set<Listitem> getPreviousSelectedItems() {
+					return prevSeldItems;
 				}
 			});
 			Set<Listitem> selItems = cast(evt.getSelectedItems());
@@ -3516,7 +3534,9 @@ public class Listbox extends MeshElement {
 			final int tsz = getItemCount();
 			final int toUI = Math.min(to, tsz - 1); // capped by size
 			if (!isMultiple() || shift == 0) {
-				if (index >= tsz)
+				
+				// B65-ZK-1969 and B65-1715
+				if ((_model == null && index >= tsz) || (_model != null && index >= _model.getSize()))
 					index = tsz - 1;
 				setSelectedIndex(index);
 				setFocusIndex(offset < 0 ? pageSize - 1 : offset);
@@ -3553,7 +3573,9 @@ public class Listbox extends MeshElement {
 					"onSelect", this, getSelectedItems(), 
 					getItemAtIndex(index), shift != 0 ? SelectEvent.SHIFT_KEY : 0);
 			Events.postEvent(evt);
-			
+		} else if (cmd.equals("onCheckSelectAll")) { // F65-ZK-2014
+			CheckEvent evt = CheckEvent.getCheckEvent(request);
+			Events.postEvent(evt);
 		} else
 			super.service(request, everError);
 	}

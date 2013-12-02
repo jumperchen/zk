@@ -286,7 +286,7 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 	 * Returns the collapsed margins, which is a list of numbers separated by comma.
 	 *
 	 * <p>
-	 * Default: "5,5,5,5".
+	 * Default: "3,3,3,3".
 	 * @return String
 	 */
 	getCmargins: function () {
@@ -554,11 +554,8 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 			}
 		}
 		
-		var bar = this._scrollbar;
-		if (bar) {
-			bar.destroy();
-			bar = this._scrollbar = null;
-		}
+		this.destroyBar_();
+		
 		if (this.$n('split')) {
 			if (this._drag) {
 				this._drag.destroy();
@@ -576,12 +573,12 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 		setTimeout(function () {
 			if (wgt.desktop) {
 				if (!wgt._scrollbar && !wgt._nativebar)
-					wgt._scrollbar = wgt._initScrollbar();
+					wgt._scrollbar = wgt.initScrollbar_();
 				wgt.refreshBar_();
 			}
 		}, 200);
 	},
-	_initScrollbar: function () {
+	initScrollbar_: function () {
 		var wgt = this,
 			embed = jq(wgt.$n('real')).data('embedscrollbar'),
 			cave = wgt.$n('cave');
@@ -620,6 +617,13 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 				if (scrollToTop)
 					bar.scrollTo(0, 0);
 			}
+		}
+	},
+	destroyBar_: function () {
+		var bar = this._scrollbar;
+		if (bar) {
+			bar.destroy();
+			bar = this._scrollbar = null;
 		}
 	},
 	doResizeScroll_: function () {
@@ -822,7 +826,7 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 						Math.floor(pn.offsetHeight * zk.parseInt(h.substring(0, pert)) / 100),
 						0) : this.$n('real').offsetHeight
 			};
-			if (zk.ie >= 9 && (region == 'west' || region == 'east') && !this._width && !this._hflex)
+			if (zk.ie > 8 && (region == 'west' || region == 'east') && !this._width && !this._hflex)
 				ambit.w++; // B50-ZK-641: text wrap in IE
 		}
 		var split = ignoreSplit ? {offsetHeight:0, offsetWidth:0}: this.$n('split') || {offsetHeight:0, offsetWidth:0};
@@ -858,13 +862,13 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 		var BL = zul.layout.Borderlayout;
 		switch(this.getPosition()) {
 		case BL.NORTH:
-			return collapsed ? 'z-icon-chevron-sign-down' : 'z-icon-chevron-sign-up';
+			return collapsed ? 'z-icon-chevron-down' : 'z-icon-chevron-up';
 		case BL.SOUTH:
-			return collapsed ? 'z-icon-chevron-sign-up' : 'z-icon-chevron-sign-down';
+			return collapsed ? 'z-icon-chevron-up' : 'z-icon-chevron-down';
 		case BL.WEST:
-			return collapsed ? 'z-icon-chevron-sign-right' : 'z-icon-chevron-sign-left';
+			return collapsed ? 'z-icon-chevron-right' : 'z-icon-chevron-left';
 		case BL.EAST:
-			return collapsed ? 'z-icon-chevron-sign-left' : 'z-icon-chevron-sign-right';
+			return collapsed ? 'z-icon-chevron-left' : 'z-icon-chevron-right';
 		}
 		return ''; // no icon
 	},

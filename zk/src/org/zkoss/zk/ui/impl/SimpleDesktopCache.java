@@ -17,23 +17,24 @@ Copyright (C) 2006 Potix Corporation. All Rights Reserved.
 package org.zkoss.zk.ui.impl;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.util.CacheMap;
-import org.zkoss.util.logging.Log;
-
-import org.zkoss.zk.ui.Execution;
-import org.zkoss.zk.ui.WebApp;
-import org.zkoss.zk.ui.Session;
-import org.zkoss.zk.ui.Desktop;
 import org.zkoss.zk.ui.ComponentNotFoundException;
-import org.zkoss.zk.ui.util.Configuration;
-import org.zkoss.zk.ui.util.Monitor;
-import org.zkoss.zk.ui.util.DesktopRecycle;
+import org.zkoss.zk.ui.Desktop;
+import org.zkoss.zk.ui.Execution;
+import org.zkoss.zk.ui.Session;
+import org.zkoss.zk.ui.WebApp;
 import org.zkoss.zk.ui.http.ExecutionImpl;
 import org.zkoss.zk.ui.sys.DesktopCache;
 import org.zkoss.zk.ui.sys.DesktopCtrl;
 import org.zkoss.zk.ui.sys.ExecutionsCtrl;
 import org.zkoss.zk.ui.sys.WebAppCtrl;
+import org.zkoss.zk.ui.util.Configuration;
+import org.zkoss.zk.ui.util.DesktopRecycle;
+import org.zkoss.zk.ui.util.Monitor;
 
 /**
  * A simple implementation of {@link DesktopCache}. It manages
@@ -42,7 +43,7 @@ import org.zkoss.zk.ui.sys.WebAppCtrl;
  * @author tomyeh
  */
 public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
-	private static final Log log = Log.lookup(SimpleDesktopCache.class);
+	private static final Logger log = LoggerFactory.getLogger(SimpleDesktopCache.class);
     private static final long serialVersionUID = 20060622L;
 
 	/** Used to purge obsolete desktops. */
@@ -91,11 +92,11 @@ public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
 		}
 		if (old != null) {
 			_desktops.put((old).getId(), old); //recover
-			log.warning(
+			log.warn(
 				desktop == old ? "Register a desktop twice: "+desktop:
 					"Replicated ID: "+desktop+"; already used by "+old);
 		}
-		//if (log.debugable()) log.debug("After added, desktops: "+_desktops);
+		//if (log.isDebugEnabled()) log.debug("After added, desktops: "+_desktops);
 	}
 	public void removeDesktop(Desktop desktop) {
 		final boolean oldexp = _desktops.disableExpunge(true);
@@ -105,7 +106,7 @@ public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
 				old = _desktops.remove(desktop.getId());
 			}
 			if (old == null)
-				log.warning("Removing non-existent desktop: "+desktop);
+				log.warn("Removing non-existent desktop: "+desktop);
 			else
 				desktopDestroyed(desktop);
 		} finally {
@@ -139,7 +140,7 @@ public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
 				try {
 					monitor.desktopDestroyed(desktop);
 				} catch (Throwable ex) {
-					log.error(ex);
+					log.error("", ex);
 				}
 			}
 	
@@ -148,7 +149,7 @@ public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
 				try {
 					dtrc.afterRemove(sess, desktop);
 				} catch (Throwable ex) {
-					log.error(ex);
+					log.error("", ex);
 				}
 			}
 		} finally {
@@ -187,7 +188,7 @@ public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
 
 	public void stop() {
 		synchronized (_desktops) {
-			if (log.debugable()) log.debug("Invalidated and remove: "+_desktops);
+			if (log.isDebugEnabled()) log.debug("Invalidated and remove: "+_desktops);
 			final boolean old = _desktops.disableExpunge(true);
 			try {
 				for (Desktop desktop: new ArrayList<Desktop>(_desktops.values())) {
@@ -202,7 +203,7 @@ public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
 
 	/** Holds desktops. */
 	private static class Cache extends CacheMap<String, Desktop> { //serializable
-		private boolean _expungeDisabled;
+		private AtomicBoolean _expungeDisabled = new AtomicBoolean(false);
 		private Cache(Configuration config) {
 			super(16);
 
@@ -212,13 +213,11 @@ public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
 			v = config.getDesktopMaxInactiveInterval();
 			setLifetime(v >= 0 ? v * 1000: Integer.MAX_VALUE / 4);
 		}
-		synchronized private boolean disableExpunge(boolean disable) {
-			boolean old = _expungeDisabled;
-			_expungeDisabled = disable;
-			return old;
+		private boolean disableExpunge(boolean disable) {
+			return _expungeDisabled.getAndSet(disable);
 		}
 		protected boolean shallExpunge() {
-			return !_expungeDisabled
+			return !_expungeDisabled.get()
 				&& (super.shallExpunge()
 					|| sizeWithoutExpunge() > (getMaxSize() / 2));
 			//2012-12-07 Ian: expunge should been triggered often  
@@ -234,7 +233,7 @@ public class SimpleDesktopCache implements DesktopCache, java.io.Serializable {
 			super.onExpunge(v);
 
 			desktopDestroyed(v.getValue());
-			if (log.debugable()) log.debug("Expunge desktop: "+v.getValue());
+			if (log.isDebugEnabled()) log.debug("Expunge desktop: "+v.getValue());
 		}
 
 		private void readObject(java.io.ObjectInputStream s)

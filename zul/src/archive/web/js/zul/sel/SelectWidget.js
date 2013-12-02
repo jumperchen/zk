@@ -74,6 +74,12 @@ it will be useful, but WITHOUT ANY WARRANTY.
 	function _fixReplace(w) {
 		return w && (w = w.uuid) ? zk.Widget.$(w): null;
 	}
+	function _isListgroup(w) {
+		return zk.isLoaded('zkex.sel') && w.$instanceof(zkex.sel.Listgroup);
+	}
+	function _isListgroupfoot(w) {
+		return zk.isLoaded('zkex.sel') && w.$instanceof(zkex.sel.Listgroupfoot);
+	}
 
 var SelectWidget =
 /**
@@ -345,7 +351,7 @@ zul.sel.SelectWidget = zk.$extends(zul.mesh.MeshWidget, {
 		}
 
 		//Bug in B30-1926094-1.zul
-		if (zk.ie)
+		if (zk.ie < 11)
 			this._syncFocus(this._focusItem);
 
 		this._calcHgh();
@@ -425,7 +431,7 @@ zul.sel.SelectWidget = zk.$extends(zul.mesh.MeshWidget, {
 			if (this.isVflex()) {
 				hgh = this._vflexSize(n.style.height);
 
-				if (zk.ie && this._cachehgh != hgh) {
+				if (zk.ie < 11 && this._cachehgh != hgh) {
 					hgh -= 1; // need to display the bottom border.
 					this._cachehgh = hgh;
 				}
@@ -669,7 +675,9 @@ zul.sel.SelectWidget = zk.$extends(zul.mesh.MeshWidget, {
 		//However, FF won't fire onclick if dragging, so the spec is
 		//not to change selection if dragging (selected or not)
 		var alwaysSelect,
-			cmClicked = this._checkmark && evt.domTarget == row.$n('cm');
+			tg = evt.domTarget,
+			cm = row.$n('cm'),
+			cmClicked = this._checkmark && (tg == cm || tg.parentNode == cm);
 		if (zk.dragging || (!cmClicked && (this._shallIgnore(evt, true)
 		|| ((alwaysSelect = this.shallIgnoreSelect_(evt, row))
 			&& !(alwaysSelect = alwaysSelect < 0)))))
@@ -881,6 +889,11 @@ zul.sel.SelectWidget = zk.$extends(zul.mesh.MeshWidget, {
 			var bar = this._scrollbar;
 			if (bar)
 				bar.scrollToElement(lastrow.$n());
+			else {
+				// 1823278: key up until selection is out of view port, then it should scroll.
+				zk(lastrow.$n()).scrollIntoView(this.ebody);
+			} 
+				
 		}
 
 		return _afterChildKey(evt);
@@ -1141,9 +1154,14 @@ zul.sel.SelectWidget = zk.$extends(zul.mesh.MeshWidget, {
 		}
 	},
 	_isAllSelected: function () {
-		for (var it = this.getBodyWidgetIterator({skipHidden:true}), w; (w = it.next());)
+		var isGroupSelect = this.groupSelect;
+		for (var it = this.getBodyWidgetIterator({skipHidden:true}), w; (w = it.next());) {
+			//Bug ZK-1998: skip listgroup and listgroupfoot widget if groupSelect is false
+			if ((_isListgroup(w) || _isListgroupfoot(w)) && !isGroupSelect)
+				continue;
 			if (!w.isDisabled() && !w.isSelected())
 				return false;
+		}
 		return true;
 	},
 	_ignoreHghExt: function () {

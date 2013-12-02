@@ -373,7 +373,7 @@ var Window =
  * In other words, the popup is hidden before the event is sent to the server.
  * The application cannot prevent the window from being hidden.
  *
- * <p>Default {@link #getZclass}: z-window-{@link #getMode()}.
+ * <p>Default {@link #getZclass}: z-window.
  */
 zul.wnd.Window = zk.$extends(zul.Widget, {
 	_mode: 'embedded',
@@ -530,9 +530,9 @@ zul.wnd.Window = zk.$extends(zul.Widget, {
 				if (!isRealVisible && maximized) return;
 
 				var l, t, w, h, 
-				s = node.style, 
-				up = 'z-icon-fullscreen',
-				down = 'z-icon-resize-small';				
+					s = node.style, 
+					up = this.getMaximizableIconClass_(),
+					down = this.getMaximizedIconClass_();
 				if (maximized) {
 					jq(this.$n('max')).addClass(this.$s('maximized'))
 						.children('.' + up).removeClass(up).addClass(down);
@@ -1104,6 +1104,13 @@ zul.wnd.Window = zk.$extends(zul.Widget, {
 			this._mask = null;
 		}
 
+		// ZK-1951 Page becomes blank after detaching a modal window having an iframe loaded with PDF in IE 10
+		// A workaround is to hide the iframe before remove
+		if (zk.ie == 10) {
+			var $jq = jq(this.$n()).find('iframe');
+			if ($jq.length)
+				$jq.hide().remove();
+		}
 		zk(node).undoVParent(); //no need to fire onVParent in unbind_
 		zWatch.unlisten({
 			onFloatUp: this,
@@ -1191,6 +1198,18 @@ zul.wnd.Window = zk.$extends(zul.Widget, {
 	//@Override, do not count size of floating window in flex calculation. bug #3172785.
 	ignoreFlexSize_: function (type) {
 		return this._mode != 'embedded';
+	},
+	getClosableIconClass_: function () {
+		return 'z-icon-times';
+	},
+	getMaximizableIconClass_: function () {
+		return 'z-icon-resize-full';
+	},
+	getMaximizedIconClass_: function () {
+		return 'z-icon-resize-small';
+	},
+	getMinimizableIconClass_: function () {
+		return 'z-icon-minus';
 	}
 },{ //static
 	// drag sizing (also referenced by Panel.js)

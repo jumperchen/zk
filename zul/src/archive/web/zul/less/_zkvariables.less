@@ -50,21 +50,9 @@
 
 // Border color
 @baseBorderColor:              #CFCFCF;
-@outerBorderColor:             @baseBorderColor;
-@headerBorderColor:            #9C9C9C;
-@bodyBorderColor:              #9C9C9C;
-@innerBorderColor:             #B3B3B3;
-@contentBorderColor:           @baseBorderColor;
-@footerBorderColor:            @baseBorderColor;
 
 // Background color
 @baseBackgroundColor:          #FFFFFF;
-@outerBackgroundColor:         @baseBackgroundColor;
-@headerBackgroundColor:        @baseBackgroundColor;
-@bodyBackgroundColor:          @baseBackgroundColor;
-@innerBackgroundColor:         @baseBackgroundColor;
-@contentBackgroundColor:       @baseBackgroundColor;
-@footerBackgroundColor:        @baseBackgroundColor;
 
 // Gradient background
 @baseGradientStart:            #FEFEFE;
@@ -91,17 +79,17 @@
 @inputBackgroundColor:         @baseBackgroundColor;
 
 // -------------------------------------
-// Table (used for grid, listbox, tree, biglistbox)
+// Mesh Table (used for grid, listbox, tree, biglistbox)
 // -------------------------------------
-@tableTitleBorderColor:        @baseBorderColor;
-@tableContentBorderColor:      #FFFFFF;
-@tableBackgroundColor:         #FFFFFF;
-@tableStripeBackgroundColor:   #F7F7F7;
-@tableFootBackgroundColor:     #FAFAFA;
-@tableTitleHoverStart:         #F2F9FE;
-@tableTitleHoverEnd:           #D6F0FD;
-@tableContentHoverStart:       #F2F9FE;
-@tableContentHoverEnd:         #D6F0FD;
+@meshTitleBorderColor:         @baseBorderColor;
+@meshContentBorderColor:       #FFFFFF;
+@meshBackgroundColor:          #FFFFFF;
+@meshStripeBackgroundColor:    #F7F7F7;
+@meshFootBackgroundColor:      #FAFAFA;
+@meshTitleHoverStart:          #F2F9FE;
+@meshTitleHoverEnd:            #D6F0FD;
+@meshContentHoverStart:        #F2F9FE;
+@meshContentHoverEnd:          #D6F0FD;
 
 // -------------------------------------
 // Component State
@@ -121,7 +109,7 @@
 @focusGradientEnd:             @baseGradientEnd;
 
 // Hover
-@hoverColor:                   #008BB6;
+@hoverColor:                   @textColorGrayLight;
 @hoverBorderColor:             #8FB9D0;
 @hoverBackgroundColor:         #D6F0FD;
 @hoverGradientStart:           #F2F9FE;
@@ -180,13 +168,13 @@
 @scrollbarGradientEnd:         #CFCFCF;
 
 // drag and drop
-@dragColor:                    #888888;
+@dragColor:                    #FFFFFF;
 @dragBackgroundColor:          #E0EAF0;
 @dragHoverBackgroundColor:     #ADD2FF;
-@dragAllowBorderColor:         #99CC99;
-@dragAllowBackgroundColor:     #EEFFEE;
-@dragDisAllowBorderColor:      #CC6666;
-@dragDisAllowBackgroundColor:  #FFEEEE;
+@dragAllowBorderColor:         #11AA33;
+@dragAllowBackgroundColor:     #11AA33;
+@dragDisAllowBorderColor:      #C13634;
+@dragDisAllowBackgroundColor:  #C13634;
 
 // splitter (hbox, vbox, borderlayout)
 @splitterSize:                 8px;
@@ -197,6 +185,8 @@
 @calendarTitleColor:           @textColorGrayLight;
 @calendarTitleHoverColor:      @textColorGrayLight;
 @calendarCellColor:            @textColorGrayLight;
+@calendarSelectedColor:        #008BB6;
+@calendarSelectedHoverColor:   #008BB6;
 @weekendColor:                 @textColorOrange;
 @weekendBackgroundColor:       #F2F2F2;
 @weekColor:                    @textColorGrayLight;
@@ -247,9 +237,13 @@
 // window
 @windowBorderColor:            #9C9C9C;
 @windowBackgroundColor:        #D9E5EF;
-@windowHeaderBackground:       @windowBackgroundColor;
+@windowFramePadding:           4px;
+
+// tabbox
+@tabSelectedBackgroundColor:   #FFFFFF;
 
 // panel
+@panelBorderColor:             #9C9C9C;
 @panelBackgroundColor:         #E1EDF4;
 @panelBodyBackground:          #F0F6F9;
 
@@ -271,10 +265,24 @@
 @navHoverBackgroundColor:      #E8E8E8;
 @navSelectedColor:             #FFFFFF;
 @navSelectedBackgroundColor:   #372F2B;
+@navSeparatorColor:            #838383;
+@navCollapsedWidth:            32px;
 
 // colorbox
 @colorboxBorderColor:          #9C9C9C;
 
+// chosenbox
+@chosenboxItemBorderColor:     #B3B3B3;
+@chosenboxCreateIconColor:     @textColorGreen;
+
 // biglistbox
 @biglistboxBackgroundColor:    #F0F0F0;
 @biglistboxFrozenBackground:   #E0E0E0;
+
+// mesh for ie8
+@meshBackgroundColorIE8:              #F5F5F5;
+@meshHoverBackgroundColorIE8:         #E5F7FF;
+@meshSelectedBackgroundColorIE8:      #E5F7FF;
+@meshSelectedHoverBackgroundColorIE8: #D9F2FF;
+@meshGroupBackgroundColorIE8:         #EDF6FF;
+@meshGroupFooterBackgroundColorIE8:   #F2F9FF;

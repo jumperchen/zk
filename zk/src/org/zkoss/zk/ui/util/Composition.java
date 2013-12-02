@@ -104,7 +104,7 @@ public class Composition implements Initiator, InitiatorExt {
 		// resolve insert components
 		final Map<String, Component> insertMap = new HashMap<String, Component>(); //(insert name, insert component)
 		final Component parent = (Component) exec.getAttribute(PARENT);
-		final Collection<Component> roots = parent == null ? page.getRoots() : parent.getChildren();
+		final Collection<Component> roots = (parent == null ? page.getRoots() : parent.getChildren());
 		resolveInsertComponents(roots, insertMap);
 
 		if (!roots.isEmpty()) {

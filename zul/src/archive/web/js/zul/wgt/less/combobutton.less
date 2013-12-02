@@ -3,57 +3,43 @@
 .z-combobutton {
 	display: inline-block;
 	min-height: @baseButtonHeight;
-	
+	cursor: pointer;
+
 	&-content {
-		font-family: @baseContentFontFamily;
-		font-size: @fontSizeMedium;
-		font-weight: normal;
-		padding: 4px 30px 4px 5px;
-		border: 1px solid @buttonBorderColor;
+		.fontStyle(@baseContentFontFamily, @fontSizeMedium, normal, @baseTextColor);
+		display: inline-block;
 		min-height: @baseButtonHeight;
+		border: 1px solid @buttonBorderColor;
+		.borderRadius(@borderRadiusSmall);
+		padding: 4px 30px 4px 5px;
+		line-height: @baseLineHeight;
 		<c:if test="${zk.ie != 8}">
 			.verGradient(@buttonGradientStart, @buttonGradientEnd);
 		</c:if>
-		line-height: @baseLineHeight;
-		.borderRadius(@borderRadiusSmall);
-		color: @baseTextColor;
-		position: relative;
-		cursor: default;
-		display: inline-block;
 		vertical-align: middle;
+		position: relative;
 		white-space: nowrap;
 	}
 	&-image {
 		vertical-align: middle;
 	}
 	&-button {
-		cursor: pointer;
+		font-weight: normal;
+		.displaySize(block, @baseButtonWidth, 100%);
 		border-left: 1px solid @buttonBorderColor;
-		display: block;
-		width: @baseButtonWidth;
-		height: 100%;
+		line-height: normal;
 		position: absolute;
 		top: 0;
 		right: 0;
-		line-height: normal;
-		font-weight: normal;
-		button[disabled] + & {
-			&:hover,
-			&:active {
-				border-color: @buttonBorderColor;
-				.resetGradient();
-				.boxShadow('none');
-			}
-		}
 	}
 	&-icon {
-		font-size: @fontSizeLarge;
-		color: @iconColor;
+		.iconFontStyle(@fontSizeLarge, @iconColor);
+		
 		&.z-icon-caret-down {
 			display: block;
+			margin-top: -8px;
 			position: absolute;
 			top: 50%;
-			margin-top: -8px;
 			left: 7px;
 		}
 	}
@@ -85,7 +71,18 @@
 			.verGradient(@activeGradientStart, @activeGradientEnd);
 		}
 	}
-	
+	&[disabled] {
+		cursor: default;
+
+		.z-combobutton-content,
+		.z-combobutton-button {
+			border-color: @buttonBorderColor;
+			.resetGradient();
+			.boxShadow('none');
+			.opacity(@disabledOpacity);
+		}
+	}
+
 	//toolbar mold
 	&-toolbar {
 		.z-combobutton-content,
@@ -108,24 +105,31 @@
 				.verGradient(@hoverGradientStart, @hoverGradientEnd);
 			}
 		}
+		&[disabled] {
+			.z-combobutton-content,
+			.z-combobutton-button {
+				border-color: transparent;
+				.resetGradient();
+				.opacity(@disabledOpacity);
+				.boxShadow('none');
+			}
+		}
 	}
 }
 
 .ie8 .z-combobutton {
 	min-height: @baseButtonHeight - 10;
-	
+
 	&-content {
-		.gradientFallback();
+		.gradientFallback(@baseGradientEnd, @baseGradientStart);
 		min-height: @baseButtonHeight - 10;
 	}
-
 	&-toolbar {
 		.z-combobutton-content,
 		.z-combobutton-button {
 			background: transparent;
 		}
 	}
-
 	&:hover {
 		.z-combobutton-content,
 		.z-combobutton-button {

@@ -189,12 +189,13 @@ zul.grid.Grid = zk.$extends(zul.mesh.MeshWidget, {
 	},
 	onSize: function () {
 		this.$supers(Grid, 'onSize', arguments);
-		var self = this;
+		var self = this,
+			canInitScrollbar = this.desktop && !this._nativebar;
+		if (!this._scrollbar && canInitScrollbar)
+			this._scrollbar = zul.mesh.Scrollbar.init(this); // 1823278: should show scroll bar here
 		setTimeout(function () {
-			if (self.desktop && !self._nativebar) {
-				if (!self._scrollbar)
-					self._scrollbar = zul.mesh.Scrollbar.init(self);
-				if (!this._grid$rod || this.inPagingMold())
+			if (canInitScrollbar) {
+				if (!self._grid$rod || self.inPagingMold())
 					self.refreshBar_();
 			}
 		}, 200);
@@ -225,11 +226,19 @@ zul.grid.Grid = zk.$extends(zul.mesh.MeshWidget, {
 			bar = this._scrollbar = null;
 		}
 	},
-	onResponse: function (ctl, opts) {
-		if (this._shallFixEmpty) 
-			_fixForEmpty(this);
-		if (this.desktop && opts && opts.rtags.onDataLoading)
+	_onRender: function () {
+		this.$supers(Grid, '_onRender', arguments);
+		if (this._shallFireOnRender)
 			this._shallShowScrollbar = true;
+	},
+	onResponse: function (ctl, opts) {
+		if (this.desktop) {
+			if (this._shallFixEmpty) 
+				_fixForEmpty(this);
+			var rtags = opts ? opts.rtags : null;
+			if (rtags && rtags.onDataLoading)
+				this._shallShowScrollbar = true;
+		}
 		this.$supers(Grid, 'onResponse', arguments);
 	},
 	// this function is used for Grid, Rows, and Columns

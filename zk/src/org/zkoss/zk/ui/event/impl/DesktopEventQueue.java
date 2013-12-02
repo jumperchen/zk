@@ -18,9 +18,11 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.lang.Threads;
 import org.zkoss.util.CollectionsX;
-import org.zkoss.util.logging.Log;
+
 
 import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Execution;
@@ -41,7 +43,7 @@ import org.zkoss.zk.ui.sys.DesktopCtrl;
  * @since 5.0.0
  */
 public class DesktopEventQueue<T extends Event> implements EventQueue<T>, java.io.Serializable {
-	/*package*/ static final Log log = Log.lookup(DesktopEventQueue.class);
+	/*package*/ static final Logger log = LoggerFactory.getLogger(DesktopEventQueue.class);
 
 	private static final String ON_QUEUE = "onQueue";
 
@@ -129,7 +131,7 @@ public class DesktopEventQueue<T extends Event> implements EventQueue<T>, java.i
 				//B65-ZK-1840 added enabler argument for reference counting  
 				((DesktopCtrl)Executions.getCurrent().getDesktop()).enableServerPush(false, this);
 			} catch (Throwable ex) {
-				log.warningBriefly("Ingored: unable to stop server push", ex);
+				log.warn("Ingored: unable to stop server push", ex);
 			}
 		}
 	}
@@ -171,7 +173,7 @@ public class DesktopEventQueue<T extends Event> implements EventQueue<T>, java.i
 	 * might take too long to execute (that is what it is used for).
 	 */
 	private static class AsyncListenerThread<T extends Event> extends Thread {
-		private static final Log log = DesktopEventQueue.log;
+		private static final Logger log = DesktopEventQueue.log;
 	
 		/*package*/ final Desktop _desktop;
 		private final EventQueue<T> _que;
@@ -195,26 +197,23 @@ public class DesktopEventQueue<T extends Event> implements EventQueue<T>, java.i
 				_inf.listener.onEvent(_event);
 	
 				if (_inf.callback != null || _pendingEvents != null) {
+					Executions.activate(_desktop);
 					try {
-						Executions.activate(_desktop);
-						try {
-							if (_pendingEvents != null)
-								for (T evt: _pendingEvents)
-									_que.publish(evt);
+						if (_pendingEvents != null)
+							for (T evt: _pendingEvents)
+								_que.publish(evt);
 
-							if (_inf.callback != null)
-								_inf.callback.onEvent(_event);
-						} finally {
-							Executions.deactivate(_desktop);
-						}
-					} catch (Throwable ex) {
-						log.realCauseBriefly(ex);
+						if (_inf.callback != null)
+							_inf.callback.onEvent(_event);
+					} finally {
+						Executions.deactivate(_desktop);
 					}
 				}
 			} catch (DesktopUnavailableException ex) {
+				log.warn("", ex);
 				//ignore
 			} catch (Throwable ex) {
-				log.realCauseBriefly(ex);
+				log.error("", ex);
 				throw UiException.Aide.wrap(ex);
 			}
 		}

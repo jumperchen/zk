@@ -251,8 +251,8 @@ zul.wnd.Panel = zk.$extends(zul.Widget, {
 		 */
 		open: function (open, fromServer) {
 			var node = this.$n(),
-				up = 'z-icon-caret-up',
-				down = 'z-icon-caret-down';
+				up = this.getCollapseOpenIconClass_(),
+				down = this.getCollapseCloseIconClass_();
 			if (node) {
 				var $body = jq(this.$n('body'));
 				if ($body[0] && !$body.is(':animated')) {
@@ -296,8 +296,8 @@ zul.wnd.Panel = zk.$extends(zul.Widget, {
 
 				var l, t, w, h,
 				s = node.style, 
-				up = 'z-icon-fullscreen',
-				down = 'z-icon-resize-small';
+				up = this.getMaximizableIconClass_(),
+				down = this.getMaximizedIconClass_();
 				if (maximized) {
 					jq(this.$n('max')).addClass(this.$s('maximized'))
 					.children('.' + up).removeClass(up).addClass(down);
@@ -828,6 +828,15 @@ zul.wnd.Panel = zk.$extends(zul.Widget, {
 		if (this._inWholeMode) {
 			var node = this.$n(),
 				oldinfo;
+
+			// ZK-1951 Page becomes blank after detaching a modal window having an iframe loaded with PDF in IE 10
+			// A workaround is to hide the iframe before remove
+			if (zk.ie == 10) {
+				var $jq = jq(this.$n()).find('iframe');
+				if ($jq.length)
+					$jq.hide().remove();
+			}
+			
 			zk(node).undoVParent(); //no need to fire onVParent in unbind_
 
 			var p = this.parent;
@@ -968,6 +977,39 @@ zul.wnd.Panel = zk.$extends(zul.Widget, {
 	getChildMinSize_: function (attr, wgt) {
 		if (!wgt.$instanceof(zul.wgt.Caption))
 			return this.$supers('getChildMinSize_', arguments);
+	},
+	isExcludedHflex_: function () {
+		if (zk.isLoaded('zkmax.layout') && this.parent.$instanceof(zkmax.layout.Portalchildren)) {
+			var p = this.parent;
+			if (p.parent)
+				return p.parent.isVertical();
+		}
+	},
+
+	isExcludedVflex_: function () {
+		if (zk.isLoaded('zkmax.layout') && this.parent.$instanceof(zkmax.layout.Portalchildren)) {
+			var p = this.parent;
+			if (p.parent)
+				return !(p.parent.isVertical());
+		}
+	},
+	getCollapseOpenIconClass_: function () {
+		return 'z-icon-caret-up';
+	},
+	getCollapseCloseIconClass_: function () {
+		return 'z-icon-caret-down';
+	},
+	getClosableIconClass_: function () {
+		return 'z-icon-times';
+	},
+	getMaximizableIconClass_: function () {
+		return 'z-icon-resize-full';
+	},
+	getMaximizedIconClass_: function () {
+		return 'z-icon-resize-small';
+	},
+	getMinimizableIconClass_: function () {
+		return 'z-icon-minus';
 	}
 }, { //static
 	//drag

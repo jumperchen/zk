@@ -147,6 +147,8 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 		}
 		ref = zk.Widget.$(ref); // just in case, if ref is not a kind of zul.Widget.
 		if (opts && opts.sendOnOpen) this.fire('onOpen', {open: true, reference: ref});
+		//add extra CSS class for easy customize
+		jq(node).addClass(this.$s('open'));
 	},
 	/** Returns whether to instantiate a stackup when {@link #open}
 	 * is called.
@@ -185,8 +187,12 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 					
 				if (ref) {
 					var refn = zul.Widget.isInstance(ref) ? ref.$n() : ref;
-					pos = position;
-					dim = zk(refn).dimension(true);
+					// B65-ZK-1934: Make sure refn is not null
+					if (refn) {
+						pos = position;
+						dim = zk(refn).dimension(true);
+					} else 
+						return {pos: position};
 				}
 			} else
 				return {pos: position};
@@ -241,21 +247,32 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 		this.setVisible(false);
 		
 		var node = this.$n();
-		
-		if (zk.ie) { // re-create dom element to remove :hover state style
-			this.replaceHTML(node);
-		}
-		
 		zk(node).undoVParent();
 		zWatch.fireDown('onVParent', this);
 
 		this.setFloating_(false);
-		if (opts && opts.sendOnOpen) this.fire('onOpen', {open:false});
+		if (opts && opts.sendOnOpen)
+			this.fire('onOpen', {open:false});
+		
+		if (zk.ie < 11) { // re-create dom element to remove :hover state style
+			var that = this;
+			setTimeout(function() {
+				that.replaceHTML(node); // see also ZK-1216, ZK-1124, ZK-318
+			}, 50);
+		}
+		//remove extra CSS class
+		jq(node).removeClass(this.$s('open'));
 	},
 	onFloatUp: function(ctl){
 		if (!this.isVisible()) 
 			return;
 		var wgt = ctl.origin;
+		
+		// F70-ZK-2007: If popup belongs to widget's ascendant then return
+		for (w = wgt; w; w= w.parent) {
+			if (this._equalsPopId(w._popup) || this._equalsPopId(w._context))
+				return;
+		}
 		
 		for (var floatFound; wgt; wgt = wgt.parent) {
 			if (wgt == this) {
@@ -268,6 +285,30 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 			floatFound = floatFound || wgt.isFloating_();
 		}
 		this.close({sendOnOpen:true});
+	},
+	// F70-ZK-2007: Check if widget's popup id equals to popup
+	_equalsPopId: function(params) {
+		if (!params)
+			return false;
+		// parse popup id from params 
+		var index = params.indexOf(','),
+			start = params.indexOf('='),
+			p = params,
+			id;
+		if (start != -1)
+			p = params.substring(0, params.substring(0, start).lastIndexOf(','));
+		
+		if (index != -1) {
+			id = p.substring(0, index).trim();
+		} else {
+			id = params.trim();
+		}
+		// If param id is 'uuid(an_uuid)', when compare it with uuid
+		if (id.startsWith('uuid(') && id.endsWith(')')) {
+			return this.uuid == id.substring(5, id.length - 1);
+		} else {
+			return this.id == id;
+		}
 	},
 	bind_: function () {
 		this.$supers(zul.wgt.Popup, 'bind_', arguments);
@@ -295,6 +336,7 @@ zul.wgt.Popup = zk.$extends(zul.Widget, {
 			// B50-ZK-391
 			// should keep openInfo, maybe used in onResponse later.
 		}
+		zk(this).redoCSS(-1, {'fixFontIcon': true});
 	},
 	setHeight: function (height) {
 		this.$supers('setHeight', arguments);

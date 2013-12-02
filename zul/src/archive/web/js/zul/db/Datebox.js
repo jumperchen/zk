@@ -353,8 +353,9 @@ zul.db.Datebox = zk.$extends(zul.inp.FormatWidget, {
 		zul.inp.RoundUtl.doFocus_(this);
 	},
 	doBlur_: function (evt) {
+		if (this._inplace && this._pop && this._pop.isOpen())
+			return; // prevent blur if popup is opened
 		this.$supers('doBlur_', arguments);
-
 		_blurInplace(this);
 	},
 	doClick_: function (evt) {
@@ -385,7 +386,7 @@ zul.db.Datebox = zk.$extends(zul.inp.FormatWidget, {
 
 			//FF: if we eat UP/DN, Alt+UP degenerate to Alt (select menubar)
 			var opts = {propagation:true};
-			if (zk.ie) opts.dom = true;
+			if (zk.ie < 11) opts.dom = true;
 			evt.stop(opts);
 			return;
 		}
@@ -547,6 +548,8 @@ zul.db.CalendarPop = zk.$extends(zul.db.Calendar, {
 			db.updateChange_();
 		else if (zul.db.DateboxCtrl.isPreservedFocus(this))
 			zk(db.getInputNode()).focus();
+		//remove extra CSS class
+		jq(pp).removeClass(db.$s('open'));
 	},
 	isOpen: function () {
 		return zk(this.parent.$n('pp')).isVisible();
@@ -611,6 +614,8 @@ zul.db.CalendarPop = zk.$extends(zul.db.Calendar, {
 		} else {
 			db._tm.setVisible(false);
 		}
+		//add extra CSS class for easy customize
+		jq(pp).addClass(db.$s('open'));
 	},
 	syncShadow: function () {
 		if (!this._shadow)

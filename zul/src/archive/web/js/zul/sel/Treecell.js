@@ -105,6 +105,24 @@ zul.sel.Treecell = zk.$extends(zul.LabelImageWidget, {
 			}
 		}
 	},
+	doFocus_: function (evt) {
+		this.$supers('doFocus_', arguments);
+		//sync frozen
+		var tree = this.getTree(),
+		frozen = tree ? tree.frozen : null,
+		tbody = tree && tree._treechildren ? tree._treechildren.$n() : null,
+		td, tds;
+		if (frozen && tbody) {
+			tds = jq(evt.domTarget).parents('td');
+			for (var i = 0, j = tds.length; i < j; i++) {
+				td = tds[i];
+				if (td.parentNode.parentNode == tbody) {
+					tree._moveToHidingFocusCell(td.cellIndex);
+					break;
+				}
+			}
+		}
+	},
 	_syncIcon: function () {
 		this.rerender();
 		var p;
@@ -122,7 +140,7 @@ zul.sel.Treecell = zk.$extends(zul.LabelImageWidget, {
 					var chkable = item.isCheckable(),
 						multi = tree.isMultiple(),
 						cmCls = multi ? item.$s('checkbox') : item.$s('radio'),
-						ckCls = multi ? ' z-icon-ok' : ' z-icon-radio';
+						ckCls = multi ? ' z-icon-check' : ' z-icon-radio';
 					sb.push('<span id="', this.parent.uuid, '-cm" class="',
 							item.$s('checkable'), ' ', cmCls);
 					
@@ -172,6 +190,7 @@ zul.sel.Treecell = zk.$extends(zul.LabelImageWidget, {
 		sb.push('<span class="');
 		if (name == 'spacer') {
 			sb.push(iconScls, '-line ', iconScls, '-', name, '"');
+			openCloseIcon.push('&nbsp;');
 		} else {
 			var id = '';
 			if (button) {

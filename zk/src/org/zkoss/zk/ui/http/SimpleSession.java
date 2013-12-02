@@ -16,36 +16,36 @@ Copyright (C) 2005 Potix Corporation. All Rights Reserved.
 */
 package org.zkoss.zk.ui.http;
 
+import java.io.Externalizable;
+import java.io.Serializable;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.io.Serializable;
-import java.io.Externalizable;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.portlet.PortletSession;
+import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.zkoss.util.CollectionsX;
-import org.zkoss.util.logging.Log;
-import org.zkoss.web.servlet.Servlets;
 import org.zkoss.web.servlet.xel.AttributesMap;
-
-import org.zkoss.zk.ui.WebApp;
+import org.zkoss.zk.ui.Execution;
+import org.zkoss.zk.ui.Executions;
 import org.zkoss.zk.ui.Session;
+import org.zkoss.zk.ui.WebApp;
 import org.zkoss.zk.ui.ext.ScopeListener;
-import org.zkoss.zk.ui.sys.SessionsCtrl;
-import org.zkoss.zk.ui.sys.SessionCtrl;
-import org.zkoss.zk.ui.sys.WebAppCtrl;
-import org.zkoss.zk.ui.sys.DesktopCache;
-import org.zkoss.zk.ui.util.Monitor;
-import org.zkoss.zk.ui.util.Configuration;
-import org.zkoss.zk.ui.util.SessionSerializationListener;
-import org.zkoss.zk.ui.util.SessionActivationListener;
-import org.zkoss.zk.ui.sys.Attributes;
 import org.zkoss.zk.ui.impl.ScopeListeners;
+import org.zkoss.zk.ui.sys.Attributes;
+import org.zkoss.zk.ui.sys.DesktopCache;
+import org.zkoss.zk.ui.sys.SessionCtrl;
+import org.zkoss.zk.ui.sys.SessionsCtrl;
+import org.zkoss.zk.ui.sys.WebAppCtrl;
+import org.zkoss.zk.ui.util.Configuration;
+import org.zkoss.zk.ui.util.Monitor;
+import org.zkoss.zk.ui.util.SessionActivationListener;
+import org.zkoss.zk.ui.util.SessionSerializationListener;
 
 /** A non-serializable implementation of {@link org.zkoss.zk.ui.Session}.
  * 
@@ -58,8 +58,9 @@ import org.zkoss.zk.ui.impl.ScopeListeners;
  *
  * @author tomyeh
  */
+@SuppressWarnings("deprecation")
 public class SimpleSession implements Session, SessionCtrl {
-	private static final Log log = Log.lookup(SimpleSession.class);
+	private static final Logger log = LoggerFactory.getLogger(SimpleSession.class);
 
 	/** The attribute used to hold a set of serializable attributes that are written
 	 * thru {@link #setAttribute}.
@@ -85,7 +86,7 @@ public class SimpleSession implements Session, SessionCtrl {
 	 * Note: No need to serialize attributes since it is done by Web server.
 	 */
 	private Map<String, Object> _attrs;
-	private String _remoteAddr, _remoteHost, _serverName, _localAddr, _localName;
+	
 	private DesktopCache _cache;
 	/** Next available component uuid. */
 	private int _nextUuid;
@@ -131,20 +132,7 @@ public class SimpleSession implements Session, SessionCtrl {
 		_navsess = navsess;
 
 		cleanSessAttrs(); //after _navsess is initialized
-
-		if (request instanceof ServletRequest) {
-			final ServletRequest req = (ServletRequest)request;
-			_remoteAddr = req.getRemoteAddr();
-			_remoteHost = req.getRemoteHost();
-			_serverName = req.getServerName();
-			if (Servlets.isServlet24()) {
-				_localAddr = req.getLocalAddr();
-				_localName = req.getLocalName();
-			} else {
-				_localAddr = _localName = "";
-			}
-		}
-
+		
 		init();
 	}
 	/** Called to initialize some members after this object is deserialized.
@@ -307,19 +295,34 @@ public class SimpleSession implements Session, SessionCtrl {
 	}
 
 	public String getRemoteAddr() {
-		return _remoteAddr;
+		 Execution execution = Executions.getCurrent();
+		 if (execution != null)
+			 return execution.getRemoteAddr();
+		 return null;
 	}
 	public String getRemoteHost() {
-		return _remoteHost;
+		 Execution execution = Executions.getCurrent();
+		 if (execution != null)
+			 return execution.getRemoteHost();
+		 return null;
 	}
 	public String getServerName() {
-		return _serverName;
+		 Execution execution = Executions.getCurrent();
+		 if (execution != null)
+			 return execution.getServerName();
+		 return null;
 	}
 	public String getLocalName() {
-		return _localName;
+		 Execution execution = Executions.getCurrent();
+		 if (execution != null)
+			 return execution.getLocalName();
+		 return null;
 	}
 	public String getLocalAddr() {
-		return _localAddr;
+		 Execution execution = Executions.getCurrent();
+		 if (execution != null)
+			 return execution.getLocalAddr();
+		 return null;
 	}
 
 	public void invalidateNow() {
@@ -409,7 +412,7 @@ public class SimpleSession implements Session, SessionCtrl {
 			try {
 				monitor.sessionDestroyed(this);
 			} catch (Throwable ex) {
-				log.error(ex);
+				log.error("", ex);
 			}
 		}
 
@@ -426,12 +429,7 @@ public class SimpleSession implements Session, SessionCtrl {
 	 */
 	protected void writeThis(java.io.ObjectOutputStream s)
 	throws java.io.IOException {
-		s.writeObject(_remoteAddr);
-		s.writeObject(_remoteHost);
-		s.writeObject(_serverName);
-		s.writeObject(_localAddr);
-		s.writeObject(_localName);
-
+		
 		s.writeObject(_cache);
 		s.writeInt(_nextUuid);
 
@@ -456,12 +454,6 @@ public class SimpleSession implements Session, SessionCtrl {
 	protected void readThis(java.io.ObjectInputStream s)
 	throws java.io.IOException, ClassNotFoundException {
 		init();
-
-		_remoteAddr = (String)s.readObject();
-		_remoteHost = (String)s.readObject();
-		_serverName = (String)s.readObject();
-		_localAddr = (String)s.readObject();
-		_localName = (String)s.readObject();
 
 		_cache = (DesktopCache)s.readObject();
 		_nextUuid = s.readInt();

@@ -112,7 +112,7 @@ it will be useful, but WITHOUT ANY WARRANTY.
 			setTimeout(showprgbInit, 10);
 	}
 	function showprgb() { //When passed to FF's setTimeout, 1st argument is not null
-		_showprgb();
+		_showprgb(zk.processMask);
 	}
 	function _showprgb(mask, icon) {
 		var $jq;
@@ -1281,26 +1281,6 @@ zk.log('value is", value);
 	function _ver(ver) {
 		return parseFloat(ver) || ver;
 	}
-	function _setCookie(name, value, exdays) {
-		var exdate = new Date();
-		exdate.setDate(exdate.getDate() + exdays);
-		var value = escape(value) + ((exdays == null) ? '' : '; expires=' + exdate.toUTCString());
-		document.cookie = name + '=' + value + ';path=/';
-	}
-	function _getCookie(name) {
-		var cookies = document.cookie.split(';'),
-			len = cookies.length,
-			value = 0;
-		for (var i = 0, c, j; i < len; i++) {
-			c = cookies[i];
-			j = c.indexOf('=');
-			if (name == jq.trim(c.substr(0, j))) {
-				value = zk.parseInt(jq.trim(c.substr(j+1)));
-				break;
-			}
-		}
-		return value;
-	}
 
 	// jQuery 1.9 remove the jQuery.browser
 	jq.uaMatch = function( ua ) {
@@ -1341,7 +1321,8 @@ zk.log('value is", value);
 	var browser = jq.browser,
 		agent = zk.agent = navigator.userAgent.toLowerCase();
 	zk.opera = browser.opera && _ver(browser.version);
-	zk.ff = zk.gecko = browser.mozilla && _ver(browser.version);
+	zk.ff = zk.gecko = browser.mozilla 
+		&& (agent.indexOf('trident') < 0) && _ver(browser.version);
 	zk.linux = agent.indexOf('linux') >= 0;
 	zk.mac = !zk.ios && agent.indexOf('mac') >= 0;
 	zk.webkit = browser.webkit;
@@ -1351,6 +1332,7 @@ zk.log('value is", value);
 	zk.android = zk.webkit && (agent.indexOf('android') >= 0);
 	zk.mobile = zk.ios || zk.android;
 	zk.css3 = true;
+	var ie11 = browser.mozilla && (agent.indexOf('trident') >= 0) && _ver(browser.version);
 	
 	zk.vendor = zk.webkit ? 'webkit' : '';
 
@@ -1368,29 +1350,23 @@ zk.log('value is", value);
 		zk.iex = browser.msie && _ver(browser.version); //browser version
 			//zk.iex is the Browser Mode (aka., Compatibility View)
 			//while zk.ie is the Document Mode
+		if (!zk.iex && ie11) 
+			zk.iex = ie11;
+		
 		if (zk.iex) {
 			if ((zk.ie = document.documentMode||zk.iex) < 6) //IE7 has no documentMode
 				zk.ie = 6; //assume quirk mode
-			zk.ie7 = zk.ie >= 7; //ie7 or later
-			zk.ie8 = zk.ie >= 8; //ie8 or later
-			zk.css3 = zk.ie9 = zk.ie >= 9; //ie9 or later
-			zk.ie10 = zk.ie >= 10; //ie10 or later
-			zk.ie6_ = zk.ie < 7;
-			zk.ie7_ = zk.ie == 7;
-			zk.ie8_ = zk.ie == 8;
-			zk.ie9_ = zk.ie == 9;
-			zk.ie10_ = zk.ie == 10;
+			// zk.ien: the version n or later but less than 11
+			if (zk.ie < 11 && zk.ie > 6) {
+				zk.ie7 = zk.ie >= 7;
+				zk.ie8 = zk.ie >= 8;
+				zk.ie9 = zk.ie >= 9;
+				zk.ie10 = zk.ie >= 10;
+			}
+			zk['ie' + zk.ie + '_'] = true;
+			zk.css3 = zk.ie >= 9;
 			bodycls = 'ie ie' + Math.floor(zk.ie);
 			zk.vendor = 'ms';
-			
-			// ZK-1878: IE Compatibility View issue when using Meta tag with IE=edge
-			var v = _getCookie('zkie-compatibility');
-			if (zk.iex != zk.ie || (v && v != zk.ie)) {
-				if (v != zk.ie) {
-					_setCookie('zkie-compatibility', zk.ie, 365*10);
-					window.location.reload();
-				}
-			}
 		} else {
 			if (zk.webkit)
 				bodycls = 'webkit webkit' + Math.floor(zk.webkit);
@@ -1666,14 +1642,14 @@ zk._Erbx = zk.$extends(zk.Object, { //used in HTML tags
 			click = zk.mobild ? ' ontouchstart' : ' onclick',
 			// Use zUtl.encodeXML -- Bug 1463668: security
  			html = ['<div class="z-error" id="', id, '">',
- 			        '<div class="messagecontent"><div class="messages">',
- 			        zUtl.encodeXML(msg, {multiline : true}), '</div></div>',
- 			        '<div id="', id, '-p"><div class="errornumbers">',
- 					'<i class="z-icon-warning-sign"/>&nbsp;', ++_errcnt, ' Errors</div>',
+ 			        '<div id="', id, '-p">',
+ 			        '<div class="errornumbers">', ++_errcnt, ' Errors</div>',
  					'<div class="button"', click, '="zk._Erbx.remove()">',
- 					'<i class="z-icon-remove"/></div>',
+ 					'<i class="z-icon-times"></i></div>',
  					'<div class="button"', click, '="zk._Erbx.redraw()">',
- 					'<i class="z-icon-refresh"/></div></div></div>'];
+ 					'<i class="z-icon-refresh"></i></div></div>',
+ 					'<div class="messagecontent"><div class="messages">',
+ 			        zUtl.encodeXML(msg, {multiline : true}), '</div></div></div>'];
 
 		jq(document.body).append(html.join(''));
 		_erbx = this;
@@ -1705,9 +1681,9 @@ zk._Erbx = zk.$extends(zk.Object, { //used in HTML tags
 
 		var id = _erbx.id;
 		jq('#' + id + ' .errornumbers')
-			.html('<i class="z-icon-warning-sign"/>&nbsp;'+ ++_errcnt + ' Errors');
+			.html(++_errcnt + ' Errors');
 		jq('#' + id + ' .messages')
-			.prepend('<div class="newmessage">' + msg + '</hr></div>');
+			.append('<div class="newmessage">' + msg + '</hr></div>');
 		jq('#' + id + ' .newmessage')
 			.removeClass('newmessage').addClass('message').slideDown(600)
 	},

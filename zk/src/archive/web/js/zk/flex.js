@@ -23,7 +23,7 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		if ($prev.length) {
 			ps = $prev[0].style;
 			// ZK-700 ignore prev if not displayed
-			if (ps.display == 'none')
+			if (!zk($prev[0]).isRealVisible()) // B65-ZK-1925: Use isRealVisible() to determine it is visible or not
 				return pos;
 			else {
 				zs = $zkc[0].style;
@@ -53,11 +53,17 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		pos[0] = offset[0] - pos[0];
 		pos[1] = offset[1] - pos[1];
 		
+		// 3298164: should not see red area at the bottom of listbox
+		if (zk.ie10_) {
+			pos[0] = Math.round(pos[0]);
+			pos[1] = Math.round(pos[1]);
+		}
+		
 		// revert the values
 		zk.copy(zs, coldVal);
 		zk.copy(ps, poldVal);
 			
-		return !zk.ie ? [Math.max(0, pos[0]), Math.max(0, pos[1])] : pos; // ie may have a wrong gap
+		return !(zk.ie < 11) ? [Math.max(0, pos[0]), Math.max(0, pos[1])] : pos; // ie may have a wrong gap
 	}
 	
 	// check whether the two elements are the same baseline, if so, we need to
@@ -66,12 +72,12 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		if (vertical) {
 			var hgh = ref._hgh || (ref._hgh = ref.top + ref.height),
 				wdh = ref._wdh || (ref._wdh = ref.left + ref.width);
-			return !(zk.ie > 9) ? cur.top >= hgh || cur.left < wdh : 
+			return !(zk.ie == 10) ? cur.top >= hgh || cur.left < wdh : 
 				Math.round(cur.top) >= hgh || Math.round(cur.left) < wdh;
 		} else {
 			var hgh = ref._hgh || (ref._hgh = ref.top + ref.height),
 				wdh = ref._wdh || (ref._wdh = ref.left + ref.width);
-			return !(zk.ie > 9) ? cur.left >= wdh || cur.top < hgh : 
+			return !(zk.ie == 10) ? cur.left >= wdh || cur.top < hgh : 
 				Math.round(cur.left) >= wdh || Math.round(cur.top) < hgh;
 		}
 	}
@@ -329,15 +335,17 @@ zFlex = { //static methods
 				//Bug Flex-138: skip if width exists
 				if (offwdh == 0 && cwgt && zk.isLoaded('zul.mesh')
 						&& cwgt.$instanceof(zul.mesh.HeaderWidget))
-					offwdh = zkc.jq.width();
+					offwdh = jq(cwgt.$n('hdfaker')).width(); //use faker width
 				
 				//Bug ZK-1706: should consider all text node size
 				if (pretxt) {
 					if (!zkpOffset)
 						zkpOffset = zkp.revisedOffset();
 					var size = _getTextSize(zkc, zkp, zkpOffset);
-					wdh -= size[0];
-					hgh -= size[1];
+					if (!cwgt || !cwgt.isExcludedHflex_()) // fixed ZK-1706 sideeffect 
+						wdh -= size[0];
+					if (!cwgt || !cwgt.isExcludedVflex_()) // fixed ZK-1706 sideeffect for B60-ZK-917.zul
+						hgh -= size[1];
 				}
 				//horizontal size
 				if (cwgt && cwgt._nhflex) {
