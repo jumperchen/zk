@@ -163,9 +163,9 @@ zul.inp.ComboWidget = zk.$extends(zul.inp.InputWidget, {
 		// B65-ZK-1588: bandbox popup should drop up 
 		//   when the space between the bandbox and the bottom of browser is not enough  
 		var top = jq(pp).position().top + (zk.chrome ? 1 : 0), // chrome alignement issue: -1px margin-top
-			realtop = zk.ie > 9 ? Math.round(top) : top,
+			realtop = zk.ie == 10 ? Math.round(top) : top,
 			after = jq(inp).position().top + zk(inp).offsetHeight(),
-			realafter = zk.ie > 9 ? Math.round(after) : after;
+			realafter = zk.ie == 10 ? Math.round(after) : after;
 		
 		if (realtop < realafter) {
 			$pp.position(inp, 'before_start');	
@@ -198,6 +198,9 @@ zul.inp.ComboWidget = zk.$extends(zul.inp.InputWidget, {
 
 		if (opts && opts.sendOnOpen)
 			this.fire('onOpen', {open:true, value: inp.value}, {rtags: {onOpen: 1}});
+
+		//add extra CSS class for easy customize
+		jq(pp).addClass(this.$s('open'));
 	},
 	/**
 	 * Extra handling for min size of popup widget. Return true if size is affected.
@@ -285,6 +288,8 @@ zul.inp.ComboWidget = zk.$extends(zul.inp.InputWidget, {
 		if (opts && opts.sendOnOpen)
 			this.fire('onOpen', {open:false, value: this.getInputNode().value}, {rtags: {onOpen: 1}});
 
+		//remove extra CSS class
+		jq(pp).removeClass(this.$s('open'));
 	},
 	_fixsz: function (ppofs) {
 		var pp = this.getPopupNode_();
@@ -295,6 +300,9 @@ zul.inp.ComboWidget = zk.$extends(zul.inp.InputWidget, {
 			pp.style.height = '350px';
 		} else if (pp.offsetHeight < 10) {
 			pp.style.height = '10px'; //minimal
+			// B65-ZK-2021: Only need to manually sync shadow when there is no item matched.
+			if (this._shadow)
+				this._shadow.sync();
 		}
 
 		if (ppofs[0] == 'auto') {
@@ -356,10 +364,11 @@ zul.inp.ComboWidget = zk.$extends(zul.inp.InputWidget, {
 	},
 	doFocus_: function (evt) {
 		this.$supers('doFocus_', arguments);
-
 		zul.inp.RoundUtl.doFocus_(this);
 	},
 	doBlur_: function (evt) {
+		if (this._inplace && this._open)
+			return; // prevent blur if popup is opened
 		this.$supers('doBlur_', arguments);
 		zul.inp.RoundUtl.doBlur_(this);
 	},
@@ -443,7 +452,7 @@ zul.inp.ComboWidget = zk.$extends(zul.inp.InputWidget, {
 
 			//FF: if we eat UP/DN, Alt+UP degenerate to Alt (select menubar)
 			var opts = {propagation:true};
-			if (zk.ie) opts.dom = true;
+			if (zk.ie < 11) opts.dom = true;
 			evt.stop(opts);
 			return;
 		}
@@ -466,11 +475,13 @@ zul.inp.ComboWidget = zk.$extends(zul.inp.InputWidget, {
 		else if (keyCode == 40) this.dnPressed_(evt);
 		else this.otherPressed_(evt);
 	},
+	/* B65-ZK-2021: Too many unnecessary shadow sync calls.
 	onChildAdded_: _zkf = function (child) {
 		if (this._shadow) this._shadow.sync();
 	},
 	onChildRemoved_: _zkf,
 	onChildVisible_: _zkf,
+	*/
 	/**
 	 * Returns the icon class for this combo widget. (override by subclass only)
 	 */

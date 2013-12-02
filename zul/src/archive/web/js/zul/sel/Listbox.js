@@ -166,7 +166,7 @@ zul.sel.Listbox = zk.$extends(zul.sel.SelectWidget, {
 					self._syncSelInView();
 				}
 			}
-		}, 200);
+		}, 300);
 	},
 	refreshBar_: function (showBar, scrollToTop) {
 		var bar = this._scrollbar;
@@ -203,7 +203,6 @@ zul.sel.Listbox = zk.$extends(zul.sel.SelectWidget, {
 			_fixForEmpty(w);
 		});
 		this._shallScrollIntoView = true;
-		
 	},
 	unbind_: function () {
 		this.destoryBar_();
@@ -213,16 +212,23 @@ zul.sel.Listbox = zk.$extends(zul.sel.SelectWidget, {
 		if (this._shallScrollIntoView) {
 			var index = this.getSelectedIndex();
 			if (index >= 0) { // B50-ZK-56
-				var si, top = jq(this.$n()).offset().top;
-				for (var it = this.getBodyWidgetIterator(); index-- >= 0;)
-					si = it.next();
-				
-				if (si)
-					this._scrollbar.scrollToElement(si.$n());
+				var si, bar = this._scrollbar;
+				if (bar) {
+					for (var it = this.getBodyWidgetIterator(); index-- >= 0;)
+						si = it.next();
+					
+					if (si)
+						bar.scrollToElement(si.$n());
+				}
 			}
 			// do only once
 			this._shallScrollIntoView = false;
 		}
+	},
+	_onRender: function () {
+		this.$supers(Listbox, '_onRender', arguments);
+		if (this._shallFireOnRender)
+			this._shallShowScrollbar = true;
 	},
 	onResponse: function (ctl, opts) {
 		if (this.desktop) {
@@ -230,7 +236,8 @@ zul.sel.Listbox = zk.$extends(zul.sel.SelectWidget, {
 				this.stripe();
 			if (this._shallFixEmpty) 
 				_fixForEmpty(this);
-			if (opts && opts.rtags.onDataLoading)
+			var rtags = opts ? opts.rtags : null;
+			if (rtags && rtags.onDataLoading)
 				this._shallShowScrollbar = true;
 		}
 		this.$supers(Listbox, 'onResponse', arguments);
@@ -259,7 +266,7 @@ zul.sel.Listbox = zk.$extends(zul.sel.SelectWidget, {
 	},
 	rerender: function () {
 		this.$supers(Listbox, 'rerender', arguments);
-		this._syncStripe();		
+		this._syncStripe();
 		return this;
 	},
 

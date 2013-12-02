@@ -1,6 +1,11 @@
   --------
+ZK 7.0.1
+* Features
+* Bugs
+  ZK-2042: Button's autodisable="self" will cause to stop the form request processing  
+  --------
 ZK 7.0.0
-
+Nov 26, 2013
 * Features
   ZK-1898: Tree support render on demand
   ZK-1813: LabelImageElement support icon font CSS class instead of Image
@@ -22,6 +27,12 @@ ZK 7.0.0
   ZK-1992: Multiple selection component(listbox, chosenbox) support extra information for find out added item/removed item
   ZK-1924: Clients.scrollIntoView(Component comp) could also adjust horizontal scroll position
   ZK-1991: AMedia FileDownload support ignore add Content-Disposition to header
+  ZK-1974: Tabbox support take maximal size of all children tabpanels
+  ZK-2002: Tabbox support ListModel
+  ZK-1856: Tree support frozen as grid
+  ZK-2007: Popup support toggle type
+  ZK-1845: Tabbox - enhance performance with dynamic tabs using MVVM
+  ZK-1989: A way to reduce zkbind tracker node memory consumption.
   
 * Bugs
   ZK-1683: endless loop AU-loop in Grid, on Render Exception
@@ -30,17 +41,37 @@ ZK 7.0.0
   ZK-1911: Text-as with childable cannot work with preserve-blank for component setting
   ZK-1959: The height of arrow should not change when the tabbox add tab
   ZK-1996: Navitem onClick event would trigger twice
+  ZK-1565: Dragging listitem to itself will result in the listbox being set as the target
+  ZK-2008: Dragging between grids causes JavaScript error
+  ZK-1521: support content assist for <template> tag of ZK
+  ZK-1709: no <idspace> tag definition in zul.xsd
+  ZK-1902: zk.xml theme-provider-class not invoked
+  ZK-2020: Textbox became unmodifiable in IE11 when invalidated
+  ZK-2027: Tabbox model binding (close tab issue)
+  ZK-2026: Datebox always displays the current year when blurred if format = "MM.yyyy"
+  ZK-2031: setIimage() doesn't work on Button
+  ZK-2033: Improve Component interface Javadocs to state it is not recommended to implement this interface by the custom component developers
+  ZK-2032: Caption in Groupbox appear in wrong position when showing with constraint error
 
 * Upgrade Notes
   + org.zkoss.util.logging.Log class and org.zkoss.util.logging.config.file library-property
   are deprecated, please use SLF4J API for logging instead. 
-  + rename the orient of tabbox "horizontal" to "top", "vertical" to "left" and add extra two orients named "bottom" and "right" 
+  + rename the orient of tabbox "horizontal" to "top", "vertical" to "left" and add extra two orients named "bottom" and "right"
+  + deprecated Session's getRemoteHost(), getRemoteAddr(), getServerName(), getLocalName(), and getLocalAddr() methods,
+  please use these methods from Executions.getCurrent() instead.
+  + deprecated to enable event-thread, according to Java Servlet Specification deprecated to enable event-thread, according to Java Servlet
+  Specification that some of high-end application servers may prohibit the creation of new threads.
+  + deprecated all the classes under org.zkoss.zkplus.databind package
+  + deprecated all the classes under org.zkoss.zkplus.acegi package
+  + change the addon-name of zkplus jar from 'databind' to 'zkplus'
 
   --------
 ZK 6.5.5
 * Features
   ZK-1971: ZK wcs file shall exclude the css with zk logo image
   ZK-1973: Server processing effect can be configurable
+  ZK-2014: Listbox component support selectAll/unSelectAll event when check/uncheck on select all checkbox
+  ZK-2012: zk.ie supports ie11
 
 * Bugs
   ZK-1944: AUTO scale does not work if the value of decimalebox is bind form VM
@@ -55,7 +86,17 @@ ZK 6.5.5
   ZK-1969: listbox rod with paging mold causes incorrect keyboard navigation
   ZK-1979: Server push doesn't work when open 2 browser tab
   ZK-1955: Impossible to use onblur or onfocus on composite component
+  ZK-1997: Portallayout drag&drop element to the same position. onPortalMove event provided with wrong data
   ZK-1985: strict client site date parsing allows certain characters
+  ZK-1924: Clients.scrollIntoView(Component comp) could also adjust horizontal scroll position
+  ZK-1998: Listbox using GroupsModel sometimes would not update the select all status
+  ZK-1990: Can't get expected Locale in Bridge
+  ZK-2001: Focus to a chosenbox that place in a listbox shall not change listbox selection
+  ZK-1834: Listbox scroll bug (re-fix)
+  ZK-2021: Combobox autocomplete performance degrading quadratically with increasing number of comboitems
+  ZK-2015: Change the visible of cell component sometimes will fail (IE10 only)
+  ZK-2022: appending a component after its removal fails to initialize bindings
+  ZK-2025: Extends ZK component with lang-addon.xml file, zkbind feature doesn't work
 
   --------
 

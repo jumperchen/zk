@@ -80,7 +80,6 @@ import org.zkoss.lang.Library;
 import org.zkoss.lang.Strings;
 import org.zkoss.lang.reflect.Fields;
 import org.zkoss.util.CacheMap;
-
 import org.zkoss.zk.ui.AbstractComponent;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.Desktop;
@@ -887,7 +886,9 @@ public class BinderImpl implements Binder,BinderCtrl,Serializable{
 		final Annotation ann = AnnotationUtil.getSystemAnnotation(compCtrl, null);
 		final Map<String, String[]> attrs = ann != null ? ann.getAttributes() : null; //(tag, tagExpr)
 		
-		if (attrs != null) {
+		//only set up renderer when has model binding. (or will get error in no-model + selectedTab case
+		final String installAttr = "model";//TODO make it configurable in lang-addon.xml
+		if (attrs!=null && installAttr.equals(attr)) {
 			final String rendererName = AnnotationUtil.testString(attrs.get(Binder.RENDERER),ann); //renderer if any
 			//setup renderer
 			if (rendererName != null) { //there was system renderer
@@ -2043,9 +2044,20 @@ public class BinderImpl implements Binder,BinderCtrl,Serializable{
 	}
 	
 
+	@SuppressWarnings("unchecked")
 	public Tracker getTracker() {
 		if (_tracker == null) {
-			_tracker = new TrackerImpl();
+			String clznm = Library.getProperty("org.zkoss.bind.Tracker.class");
+			if(clznm!=null){
+				Class<Tracker> clz;
+				try {
+					clz = (Class<Tracker>)Classes.forNameByThread(clznm);
+					_tracker = clz.newInstance();
+				} catch (Exception e) {
+					throw new UiException("Can't initialize tracker",e);
+				} 
+			}else
+				_tracker = new TrackerImpl();
 		}
 		return _tracker;
 	}

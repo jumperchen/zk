@@ -22,7 +22,7 @@ Copyright (C) 2005 Potix Corporation. All Rights Reserved.
 
 	<version>
 		<version-class>org.zkoss.zul.Version</version-class>
-		<version-uid>7.0.0</version-uid>
+		<version-uid>7.0.1</version-uid>
 	</version>
 
 	<renderer-class>org.zkoss.zul.impl.PageRenderer</renderer-class>
@@ -903,36 +903,6 @@ def alert(m):
 			<mold-uri>mold/menuseparator.js</mold-uri>
 		</mold>
 	</component>
-	
-	<component>
-		<component-name>menubar</component-name>
-		<component-class>org.zkoss.zul.Menubar</component-class>
-		<widget-class>zul.menu.Menubar</widget-class>
-		<mold>
-			<mold-name>default</mold-name>
-			<mold-uri>mold/menubar.js</mold-uri>
-			<css-uri>css/menu.css.dsp</css-uri>
-		</mold>
-	</component>
-	<component>
-		<component-name>menuitem</component-name>
-		<component-class>org.zkoss.zul.Menuitem</component-class>
-		<widget-class>zul.menu.Menuitem</widget-class>
-		<mold>
-			<mold-name>default</mold-name>
-			<mold-uri>mold/menuitem.js</mold-uri>
-		</mold>
-	</component>
-	<component>
-		<component-name>menupopup</component-name>
-		<component-class>org.zkoss.zul.Menupopup</component-class>
-		<widget-class>zul.menu.Menupopup</widget-class>
-		<mold>
-			<mold-name>default</mold-name>
-			<mold-uri>mold/menupopup.js</mold-uri>
-			<css-uri>css/menu.css.dsp</css-uri>
-		</mold>
-	</component>
 	<component>
 		<component-name>north</component-name>
 		<extends>layoutregion</extends>
@@ -1180,7 +1150,7 @@ def alert(m):
 		</mold>
 		<mold>
 			<mold-name>accordion-lite</mold-name>
-			<mold-uri>mold/tabbox-accd-lite.js</mold-uri>
+			<mold-uri>mold/tabbox-accd.js</mold-uri>
 			<css-uri>css/tabbox.css.dsp</css-uri>
 		</mold>
 	</component>

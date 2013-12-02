@@ -18,10 +18,12 @@ package org.zkoss.zul;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.zkoss.lang.Objects;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.UiException;
 import org.zkoss.zk.ui.event.Event;
@@ -51,6 +53,7 @@ public class Tab extends LabelImageElement {
 
 	private boolean _disabled;
 	private transient Caption _caption;
+	private transient Object _value;
 	
 	static {
 		addClientEvent(Tab.class, Events.ON_CLOSE, 0);
@@ -66,6 +69,28 @@ public class Tab extends LabelImageElement {
 		super(label, image);
 	}
 
+	/** Returns the value.
+	 * <p>Default: null.
+	 * <p>Note: the value is application dependent, you can place
+	 * whatever value you want.
+	 * @since 7.0.0
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T getValue() {
+		return (T)_value;
+	}
+	/** Sets the value.
+	 * @param value the value.
+	 * <p>Note: the value is application dependent, you can place
+	 * whatever value you want.
+	 * @since 7.0.0
+	 */
+	public <T> void setValue(T value) {
+		if (!Objects.equals(_value, value)) {
+			_value = value;
+		}
+	}
+	
 	/** Returns the caption of this tab.
 	 * @since 6.5.0
 	 */
@@ -99,6 +124,10 @@ public class Tab extends LabelImageElement {
 	 * <p>
 	 * You can intercept the default behavior by either overriding
 	 * {@link #onClose}, or listening the onClose event.
+	 * 
+	 * <p>If {@link Tabbox#getModel()} is assigned, there is no an action to do with {@link #onClose},
+	 * i.e. developer has to listen onClose event to delete that item in model not
+	 * component itself. (since 7.0.0)
 	 */
 	public void setClosable(boolean closable) {
 		if (_closable != closable) {
@@ -117,7 +146,8 @@ public class Tab extends LabelImageElement {
 	}
 
 	/** Closes this tab and the linked tabpanel.
-	 * This method detaches this component and the linked {@link Tabpanel}).
+	 * This method detaches this component and the linked {@link Tabpanel}), only if
+	 * {@link Tabbox#getModel()} is null. (since 7.0.0)
 	 * @since 5.0.0
 	 */
 	public void close() {
@@ -129,6 +159,11 @@ public class Tab extends LabelImageElement {
 				Events.postEvent(new SelectEvent<Tab, Object>(Events.ON_SELECT, tab, selItems));
 			}
 		}
+		Tabbox tabbox = getTabbox();
+		
+		// Nothing to do according to ZK-2027 issue, let application developer to do so.
+		if (tabbox != null && tabbox.getModel() != null)
+			return;
 		
 		//Cache panel before detach , or we couldn't get it after tab is detached.
 		final Tabpanel panel = getLinkedPanel();
@@ -253,18 +288,14 @@ public class Tab extends LabelImageElement {
 		if (tabs == null)
 			return -1;
 		int j = 0;
-		for (Iterator it = tabs.getChildren().iterator();; ++j)
+		for (Iterator<Component> it = tabs.getChildren().iterator();; ++j)
 			if (it.next() == this)
 				return j;
 	}
 
 	// -- super --//
 	public String getZclass() {
-		if (_zclass != null) return _zclass;
-		final Tabbox tabbox = getTabbox();
-		final String added = tabbox != null ? tabbox.inAccordionMold() ? "-" + tabbox.getMold() :
-			tabbox.isVertical() ? "-ver" : "" : "";
-		return "z-tab" + added;
+		return _zclass == null ? "z-tab" : _zclass;
 	}
 
 	// -- Component --//
@@ -341,7 +372,7 @@ public class Tab extends LabelImageElement {
 		return clone;
 	}
 	private void afterUnmarshal() {
-		for (Iterator it = getChildren().iterator(); it.hasNext();) {
+		for (Iterator<Component> it = getChildren().iterator(); it.hasNext();) {
 			final Object child = it.next();
 			if (child instanceof Caption) {
 				_caption = (Caption)child;
@@ -367,11 +398,31 @@ public class Tab extends LabelImageElement {
 	public void service(org.zkoss.zk.au.AuRequest request, boolean everError) {
 		final String cmd = request.getCommand();
 		if (cmd.equals(Events.ON_SELECT)) {
-			final SelectEvent evt = SelectEvent.getSelectEvent(request);
-			final Set selItems = evt.getSelectedItems();
+			final Tabbox tabbox = getTabbox();
+			final Set<Tab> prevSeldItems = new LinkedHashSet<Tab>();
+			if (tabbox.getSelectedTab() != null)
+				prevSeldItems.add(tabbox.getSelectedTab());
+			final SelectEvent<Tab, Object> evt = SelectEvent.getSelectEvent(request,
+					new SelectEvent.SelectedObjectHandler<Tab>() {
+				public Set<Object> getObjects(Set<Tab> items) {
+					if (items == null || items.isEmpty() || tabbox.getModel() == null)
+						return null;
+					Set<Object> objs = new LinkedHashSet<Object>();
+					ListModel<Object> model = tabbox.getModel();
+					for (Tab i : items)
+						objs.add(model.getElementAt(i.getIndex()));
+					return objs;
+				}
+
+				public Set<Tab> getPreviousSelectedItems() {
+					return prevSeldItems;
+				}
+			});
+			
+			final Set<Tab> selItems = evt.getSelectedItems();
 			if (selItems == null || selItems.size() != 1)
 				throw new UiException("Exactly one selected tab is required: " + selItems); // debug purpose
-			final Tabbox tabbox = getTabbox();
+			
 			if (tabbox != null)
 				tabbox.selectTabDirectly((Tab) selItems.iterator().next(), true);
 

@@ -18,7 +18,7 @@ function (out) {
 		width = innerWidth == '100%' ? ' width="100%"' : '',
 		wdStyle =  innerWidth != '100%' ? 'width:' + innerWidth : '',
 		inPaging = this.inPagingMold(), pgpos,
-		tag = zk.ie || zk.gecko ? 'a' : 'button';
+		tag = zk.ie < 11 || zk.gecko ? 'a' : 'button';
 		
 	out.push('<div', this.domAttrs_(), '>');
 	//top paging
@@ -38,7 +38,7 @@ function (out) {
 				' style="table-layout:fixed;', wdStyle,'">');
 		this.domFaker_(out, '-hdfaker');
 		
-		out.push('<tbody>');
+		out.push('<tbody id="', uuid, '-headrows">');
 		for (var hds = this.heads, j = 0, len = hds.length; j < len;)
 			hds[j++].redraw(out);
 		
@@ -61,6 +61,13 @@ function (out) {
 			'-a"  onclick="return false;" href="javascript:;" class="z-focus-a"></',
 			tag, '>');
 	out.push("</div>");
+	
+	if (this._nativebar && this.frozen) {
+		out.push('<div id="', uuid, '-frozen" class="', this.$s('frozen'), '">');
+		this.frozen.redraw(out);
+		out.push('</div>');
+	}
+	
 	//foot
 	if (this.treefoot) {
 		out.push('<div id="', uuid, '-foot" class="', this.$s('footer'), '">',
@@ -72,6 +79,7 @@ function (out) {
 		this.treefoot.redraw(out);
 		out.push('</tbody></table></div>');
 	}
+	
 	//bottom paging
 	if (pgpos == 'bottom' || pgpos == 'both') {
 		out.push('<div id="', uuid, '-pgib" class="', this.$s('paging-bottom'), '">');

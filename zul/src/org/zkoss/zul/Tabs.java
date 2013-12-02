@@ -80,10 +80,7 @@ public class Tabs extends XulElement {
 			super.invalidate();
 	}
 	public String getZclass() {
-		if (_zclass != null) return _zclass;
-		final Tabbox tabbox = getTabbox();
-		final String added = tabbox != null && tabbox.isVertical() ? "-ver" : ""; 
-		return "z-tabs" + added;
+		return _zclass == null ? "z-tabs" : _zclass;
 	}
 	//-- Component --//
 	public void beforeParentChanged(Component parent) {
@@ -112,11 +109,12 @@ public class Tabs extends XulElement {
 
 			if (sel)
 				if (tabbox != null) {
-					tabbox.setSelectedTab(newtab);
+					if (tabbox.getModel() == null || tabbox.getSelectableModel().isSelectionEmpty())
+						tabbox.setSelectedTab(newtab);
 				} else {
 					newtab.setSelectedDirectly(true);
 					if (desel)
-						for (Iterator it = getChildren().iterator(); it.hasNext();) {
+						for (Iterator<Component> it = getChildren().iterator(); it.hasNext();) {
 							final Tab tab = (Tab)it.next();
 							if (tab != newtab && tab.isSelected()) {
 								tab.setSelectedDirectly(false);

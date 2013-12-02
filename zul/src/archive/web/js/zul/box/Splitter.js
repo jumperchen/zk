@@ -77,11 +77,7 @@ it will be useful, but WITHOUT ANY WARRANTY.
  * when the grippy is clicked.
  *
  *
- *  <p>Default {@link #getZclass} as follows:
- *  <ol>
- *  	<li>Case 1: If {@link #getOrient()} is vertical, "z-splitter-ver" is assumed</li>
- *  	<li>Case 2: If {@link #getOrient()} is horizontal, "z-splitter-hor" is assumed</li>
- *  </ol>
+ *  <p>Default {@link #getZclass}: z-splitter.
  * 
  */
 zul.box.Splitter = zk.$extends(zul.Widget, {
@@ -282,8 +278,7 @@ zul.box.Splitter = zk.$extends(zul.Widget, {
 	},
 	onSize: _zkf,
 	beforeSize: function () {
-		if(zk.ie != 8)
-			this.$n().style[this.isVertical() ? 'width': 'height'] = '';
+		this.$n().style[this.isVertical() ? 'width': 'height'] = '';
 	},
 
 	_fixszAll: function () {

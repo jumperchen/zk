@@ -20,7 +20,8 @@ import org.zkoss.lang.Objects;
 import org.zkoss.zk.ui.Component;
 import org.zkoss.zk.ui.UiException;
 import org.zkoss.zk.ui.WrongValueException;
-import org.zkoss.zk.ui.event.*;
+import org.zkoss.zk.ui.event.Events;
+import org.zkoss.zk.ui.event.OpenEvent;
 import org.zkoss.zul.impl.XulElement;
 
 /**
@@ -34,11 +35,7 @@ import org.zkoss.zul.impl.XulElement;
  *
  * <p>Events: onOpen
  *
- *  <p>Default {@link #getZclass} as follows: (since 3.5.0)
- *  <ol>
- *  	<li>Case 1: If {@link #getOrient()} is vertical, "z-splitter-ver" is assumed</li>
- *  	<li>Case 2: If {@link #getOrient()} is horizontal, "z-splitter-hor" is assumed</li>
- *  </ol>
+ * <p>Default {@link #getZclass}: z-splitter.
  * 
  * @author tomyeh
  */
@@ -158,8 +155,7 @@ public class Splitter extends XulElement {
 		if (!"none".equals(_collapse)) render(renderer, "collapse", _collapse);
 	}
 	public String getZclass() {
-		return _zclass != null ? _zclass:
-			"z-splitter" + (isVertical() ? "-ver" : "-hor");
+		return _zclass != null ? _zclass: "z-splitter";
 	}
 
 	//-- ComponentCtrl --//

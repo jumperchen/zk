@@ -21,16 +21,11 @@ import java.io.IOException;
 import org.zkoss.lang.Objects;
 import org.zkoss.zk.ui.WrongValueException;
 import org.zkoss.zk.ui.event.*;
-
 import org.zkoss.zul.impl.XulElement;
 
 /**
  * A slider.
- *  <p>Default {@link #getZclass} as follows: (since 3.5.0)
- *  <ol>
- *  	<li>Case 1: If {@link #getOrient()} is vertical, "z-slider-ver" is assumed</li>
- *  	<li>Case 2: If {@link #getOrient()} is horizontal, "z-slider-hor" is assumed</li>
- *  </ol>
+ * <p>Default {@link #getZclass}: z-slider.
  * 
  * @author tomyeh
  */
@@ -66,16 +61,7 @@ public class Slider extends XulElement {
 	
 	// super
 	public String getZclass() {
-		final String name = "z-slider";
-		if (_zclass == null) {
-			if (inScaleMold())
-				return name + "-scale";
-			else if (inSphereMold())			  
-				return name + ("horizontal".equals(getOrient()) ? "-sphere-hor" : "-sphere-ver");
-			else
-				return name + ("horizontal".equals(getOrient()) ? "-hor" : "-ver");
-		}
-		return _zclass;
+		return _zclass == null ? "z-slider" : _zclass;
 	}
 	
 	/** Returns the orient.
