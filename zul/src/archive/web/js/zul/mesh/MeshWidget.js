@@ -905,6 +905,9 @@ zul.mesh.MeshWidget = zk.$extends(zul.Widget, {
 
 		if (scrolled)
 			this._fireOnScrollPos();
+		
+		// ZK-2046: should sync currentTop
+		this._currentTop = this.ebody.scrollTop;
 	},
 	_timeoutId: null,
 	_fireOnScrollPos: function (time) { //overriden in zkmax
