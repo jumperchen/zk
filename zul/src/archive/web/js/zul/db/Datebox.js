@@ -576,13 +576,12 @@ zul.db.CalendarPop = zk.$extends(zul.db.Calendar, {
 	setLocalizedSymbols: function (symbols) {
 		this._localizedSymbols = symbols;
 	},
-	//B65-ZK-1904: Does not need to sync shadow in rerender, it syncs in _reposition function
-	/*
+	// ZK-2047: should sync shadow when shiftView
 	rerender: function () {
 		this.$supers('rerender', arguments);
 		if (this.desktop) this.syncShadow();
 	},
-	*/
+	
 	close: function (silent) {
 		var db = this.parent,
 			pp = db.$n("pp");
