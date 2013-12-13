@@ -7,7 +7,7 @@
 	</div>
 	<borderlayout>
 		<center autoscroll="true">
-			<div style="height: 1500px">
+			<div height="1500px">
 				<div style="margin-top: 200px">
 					<combobox>
 						<comboitem>First</comboitem>
