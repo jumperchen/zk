@@ -1,0 +1,35 @@
+<window title="Header Visibility" border="normal">
+	<label multiline="true">
+		1. The listbox should not show Head5 and Cell5.
+		2. The Head6 should be below the AUX2.
+		3. Click the checkbox, Head5 and Cell 5 will show up.
+		4. The Listheader and Listcell should be aligned.
+	</label>
+    <listbox>
+        <auxhead>
+            <auxheader align="center" colspan="5" label="AUX 1"/>
+            <auxheader align="center" colspan="1" label="AUX 2"/>
+        </auxhead>
+        <listhead>
+            <listheader id="" label="Head1" hflex="min" />
+            <listheader id="" label="Head2"  hflex="min" />
+            <listheader id="" label="Head3"  hflex="min" />
+            <listheader id="" label="Head4"  hflex="min"  />
+            <listheader visible="false" id="lh" label="Head5" hflex="min" />
+            <listheader id="" label="Head6"  hflex="min"  />
+        </listhead>
+        <listitem>
+            <listcell label="Cell1" />
+            <listcell label="Cell2" />
+            <listcell label="Cell3" />
+            <listcell label="Cell4" />
+            <listcell label="Cell5" />
+            <listcell label="Cell6" />
+        </listitem>
+    </listbox>
+	<checkbox label="multiple change">
+	  <attribute name="onCheck">
+		  lh.setVisible(self.isChecked());
+	  </attribute>
+	</checkbox>
+</window>
