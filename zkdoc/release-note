@@ -7,6 +7,7 @@ Dec 30, 2013
   ZK-2012: zk.ie supports ie11
   ZK-2014: Listbox component support selectAll/unSelectAll event when check/uncheck on select all checkbox
   ZK-2061: Security Issue: Version number inserted on each page
+  ZK-2091: Copy-paste large value in doublebox get error.
 
 * Bugs
   ZK-1944: AUTO scale does not work if the value of decimalebox is bind form VM
