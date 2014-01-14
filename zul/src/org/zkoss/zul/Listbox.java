@@ -1224,10 +1224,9 @@ public class Listbox extends MeshElement {
 				if (old != null)
 					removePagingListener(old);
 				if (_pgi == null) {
-					if (_paging != null)
+					if (_paging != null) {
 						_pgi = _paging;
-					else
-						newInternalPaging();
+					} else newInternalPaging();
 				} else { // _pgi != null
 					if (_pgi != _paging) {
 						if (_paging != null)
@@ -1241,7 +1240,7 @@ public class Listbox extends MeshElement {
 			}
 		}
 	}
-
+	
 	/**
 	 * Creates the internal paging component.
 	 */
@@ -1249,12 +1248,12 @@ public class Listbox extends MeshElement {
 //		assert inPagingMold() : "paging mold only";
 //		assert (_paging == null && _pgi == null);
 
-		final Paging paging = new Paging();
-		paging.setAutohide(true);
+		final Paging paging = new InternalPaging();
 		paging.setDetailed(true);
 		paging.applyProperties();
 		paging.setTotalSize(getDataLoader().getTotalSize());
 		paging.setParent(this);
+		
 		if (_pgi != null)
 			addPagingListener(_pgi);
 	}
@@ -1285,6 +1284,7 @@ public class Listbox extends MeshElement {
 				}
 				postOnPagingInitRender();
 			}
+			
 			invalidate();
 		}
 		
@@ -2516,6 +2516,7 @@ public class Listbox extends MeshElement {
 		} finally {
 			renderer.doFinally();
 		}
+		
 		Events.postEvent(ZulEvents.ON_AFTER_RENDER, this, null);// notify the listbox when items have been rendered.
 	}
 	private static Listitem nextListitem(Listitem item) {
@@ -2983,7 +2984,7 @@ public class Listbox extends MeshElement {
 			_topPad = 0;
 		}
 	}
-
+	
 	private class ModelInitListener implements SerializableEventListener<Event>,
 		CloneableEventListener<Event> {
 		public void onEvent(Event event) throws Exception {
@@ -3249,6 +3250,10 @@ public class Listbox extends MeshElement {
 	 */
 	private boolean isRightSelect() {
 		return Utils.testAttribute(this, "org.zkoss.zul.listbox.rightSelect", true, true);
+	}
+	
+	protected boolean isAutohidePaging() {
+		return Utils.testAttribute(this, "org.zkoss.zul.listbox.autohidePaging", true, true);
 	}
 	
 	/** Returns whether to sort all of item when model or sort direction be changed.
