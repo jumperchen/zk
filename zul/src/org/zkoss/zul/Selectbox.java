@@ -27,8 +27,6 @@ import org.zkoss.zk.ui.HtmlBasedComponent;
 import org.zkoss.zk.ui.Page;
 import org.zkoss.zk.ui.UiException;
 import org.zkoss.zk.ui.WrongValueException;
-import org.zkoss.zk.ui.event.Event;
-import org.zkoss.zk.ui.event.EventListener;
 import org.zkoss.zk.ui.event.Events;
 import org.zkoss.zk.ui.event.SelectEvent;
 import org.zkoss.zk.ui.util.ComponentCloneListener;
@@ -49,6 +47,7 @@ import org.zkoss.zul.ext.Selectable;
  * @author jumperchen
  * @since 6.0.0
  */
+@SuppressWarnings("serial")
 public class Selectbox extends HtmlBasedComponent {
 
 	private String _name;
@@ -116,7 +115,7 @@ public class Selectbox extends HtmlBasedComponent {
 	 * Returns the renderer to render each item, or null if the default renderer
 	 * is used.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> ItemRenderer<T> getItemRenderer() {
 		return (ItemRenderer) _renderer;
 	}
@@ -146,6 +145,7 @@ public class Selectbox extends HtmlBasedComponent {
 	 * Sets the renderer by use of a class name. It creates an instance
 	 * automatically.
 	 */
+	@SuppressWarnings("rawtypes")
 	public void setItemRenderer(String clsnm) throws ClassNotFoundException,
 			NoSuchMethodException, IllegalAccessException,
 			InstantiationException, java.lang.reflect.InvocationTargetException {
@@ -286,7 +286,6 @@ public class Selectbox extends HtmlBasedComponent {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void onInitRender() {
 		removeAttribute(ATTR_ON_INIT_RENDER_POSTED);
 		onInitRenderNow();
@@ -328,12 +327,12 @@ public class Selectbox extends HtmlBasedComponent {
 	 * Returns the model associated with this selectbox, or null if this
 	 * selectbox is not associated with any list data model.
 	 */
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> ListModel<T> getModel() {
 		return (ListModel) _model;
 	}
 
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public <T> ItemRenderer<T> getRealRenderer() {
 		final ItemRenderer renderer = getItemRenderer();
 		return renderer != null ? renderer : _defRend;
@@ -457,24 +456,26 @@ public class Selectbox extends HtmlBasedComponent {
 				getSelectableModel().setSelection(selObjs);;
 			
 			if (prevSelected != null) {
-				final Set<Object> prevSet = new LinkedHashSet<Object>(1);
-				prevSet.add(prevSelected);
+				final Set<Object> prevSeldObjs = new LinkedHashSet<Object>(1);
+				prevSeldObjs.add(prevSelected);
+
 				Events.postEvent(new SelectEvent(Events.ON_SELECT, this, null, 
-						prevSet, selObjs, null, index, 0));
+						null, null, selObjs, prevSeldObjs, prevSeldObjs, null, index, 0));
 			} else {
 				Events.postEvent(new SelectEvent(Events.ON_SELECT, this, null, 
-						null, selObjs, null, index, 0));
+						null, null, selObjs, null, null, null, index, 0));
 			}
 		} else // ZK-1053
 			super.service(request, everError);
 	}
 
 	// Cloneable//
+	@SuppressWarnings("rawtypes")
 	public Object clone() {
 		final Selectbox clone = (Selectbox) super.clone();
 		if (clone._model != null) {
 			if (clone._model instanceof ComponentCloneListener) {
-				final ListModel model = (ListModel) ((ComponentCloneListener) clone._model).willClone(clone);
+				final ListModel model = ((ListModel) ((ComponentCloneListener) clone._model).willClone(clone));
 				if (model != null)
 					clone._model = model;
 			}
@@ -501,6 +502,7 @@ public class Selectbox extends HtmlBasedComponent {
 				: null);
 	}
 
+	@SuppressWarnings("rawtypes")
 	private void readObject(java.io.ObjectInputStream s)
 			throws java.io.IOException, ClassNotFoundException {
 		s.defaultReadObject();

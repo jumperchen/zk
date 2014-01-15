@@ -43,6 +43,7 @@ import org.zkoss.zul.impl.LabelImageElement;
  * 
  * @author tomyeh
  */
+@SuppressWarnings("serial")
 public class Tab extends LabelImageElement {
 
 	private static final Logger log = LoggerFactory.getLogger(Tab.class);
@@ -416,6 +417,28 @@ public class Tab extends LabelImageElement {
 
 				public Set<Tab> getPreviousSelectedItems() {
 					return prevSeldItems;
+				}
+
+				// in single selection, getUnselectedItems() is same as getPreviousSelectedItems()
+				public Set<Tab> getUnselectedItems() {
+					return getPreviousSelectedItems();
+				}
+
+				public Set<Object> getPreviousSelectedObjects() {
+					ListModel<Object> model = tabbox.getModel();
+					Set<Tab> items = getPreviousSelectedItems();
+					if (model == null || items.size() < 1)
+						return null;
+					else {
+						Set<Object> s = new LinkedHashSet<Object>();
+						s.add(model.getElementAt(((Tab)items.iterator().next()).getIndex()));
+						return s;
+					}
+				}
+
+				// in single selection, getUnselectedObjects() is same as getPreviousSelectedObjects()
+				public Set<Object> getUnselectedObjects() {
+					return getPreviousSelectedObjects();
 				}
 			});
 			
