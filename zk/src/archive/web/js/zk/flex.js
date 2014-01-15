@@ -124,7 +124,7 @@ it will be useful, but WITHOUT ANY WARRANTY.
 					if (cwgt && cwgt.desktop){ //try child widgets, bug ZK-1575: should check if child widget is bind to desktop
 						var first = cwgt,
 							refDim;
-						for (; cwgt; cwgt = cwgt.nextSibling) { //bug 3132199: hflex="min" in hlayout
+						for (var zkpOffset; cwgt; cwgt = cwgt.nextSibling) { //bug 3132199: hflex="min" in hlayout
 							if (!cwgt.ignoreFlexSize_(o)) {
 								var c = cwgt.$n();
 								if (c) { //node might not exist if rod on
@@ -155,6 +155,17 @@ it will be useful, but WITHOUT ANY WARRANTY.
 										max += sz;
 									else if (sz > max)
 										max = sz;
+									
+									//B70-ZK-2117: fix the space between inline-block elements causes incorrect width.
+									if (o == 'w') {
+										var prev = cwgt.previousSibling,
+											prevn;
+										if (prev && (prevn = prev.$n()) != null && jq(prevn).css('display').startsWith('inline')) {
+											if (!zkpOffset)
+												zkpOffset = zk(wgt.$n()).cmOffset();
+											max += _getTextSize(zk(c), zk(wgtn), zkpOffset)[0];
+										}
+									}
 								}
 							}
 						}
@@ -224,12 +235,15 @@ it will be useful, but WITHOUT ANY WARRANTY.
 				if (zk.webkit && margin < 0) 
 					margin = 0;
 				
+				//B70-ZK-2117:if max size equals to 0, do not add bound size.
 				var map = {},
 					n = wgt.$n(), 
 					hasChildren = zk.isLoaded('zul.wgt') && wgt.$instanceof(zul.wgt.Caption) && wgt.nChildren > 0,
-					cavesz = hasChildren ? zk(wgt.$n('cave'))[offsetPos]() : 0;
+					cavesz = hasChildren ? zk(wgt.$n('cave'))[offsetPos]() : 0,
+					maxSize = max + cavesz,
+					boundSize = wgt[contentPos]() + margin;
 
-				map[sizePos] = max + cavesz + wgt[contentPos]() + margin;
+				map[sizePos] = maxSize != 0 ? maxSize + boundSize : 0;
 				var s = wgt.setFlexSize_(map, true);
 				sz = {height: n.offsetHeight, width: (s && s.width) || n.offsetWidth};
 				if (sz && sz[sizePos] >= 0)

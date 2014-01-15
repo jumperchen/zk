@@ -161,7 +161,9 @@ zk.override(jq.event, zjq._evt = {}, {
 //IE: use query string if possible to avoid incomplete-request problem
 if (zk.ie9)
 	zjq.minWidth = function (el) {
-		return zk(el).offsetWidth() + 1; //IE9/IE10: bug ZK-483: an extra pixel required
+		// B70-ZK-2117: if offsetWidth equals to 0, return 1px will cause the icorrect width.
+		var offsetWidth = zk(el).offsetWidth();
+		return offsetWidth != 0 ? offsetWidth + 1 : 0;//IE9/IE10: bug ZK-483: an extra pixel required
 	};
 
 })();

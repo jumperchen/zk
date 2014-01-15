@@ -1,0 +1,157 @@
+<?page title="South correct size" contentType="text/html;charset=UTF-8"?>
+<zk xmlns:h="native">
+	<label>Test each tab content</label>
+	<tabbox hflex="min" height="300px">
+		<tabs>
+			<tab>label</tab>
+			<tab>grid</tab>
+		</tabs>
+		<tabpanels>
+			<tabpanel>
+				<borderlayout vflex="1" hflex="1">
+			    	<center>
+			    		<label>
+			    			Click colled button, South size should be just enough to occupy its contents.
+			    		</label>
+			    	</center>
+			        <south border="normal" title="Container Detail" collapsible="true" open="false" cmargins="0,0,0,0" margins="0,0,0,0" hflex="min">
+			            <window mode="embedded" border="none" vflex="min" hflex="1">
+			                <div vflex="1" hflex="min" style="background:yellow">
+			               		<label value="label"></label>
+			                	<label value="label"></label>
+			                	<label value="label"></label>
+			                	<label value="label"></label>
+			                	<label value="label"></label>
+			                </div>
+			            </window>
+			        </south>
+			    </borderlayout>
+    		</tabpanel>
+			<tabpanel>
+				<borderlayout vflex="1" hflex="1" id="borderlayout">
+			     	<center>
+			     		<label>
+			    			Click colled button, South size should be just enough to occupy its contents.
+			    		</label>
+			     	</center>
+			         <south id="south" border="normal" title="Container Detail" collapsible="true" open="false" cmargins="0,0,0,0" margins="0,0,0,0" hflex="min">
+			             <window mode="embedded" border="none" vflex="min" hflex="1">
+			                 <div vflex="min" hflex="min" style="background:yellow">
+			                     <grid oddRowSclass="z-grid-odd" pagingPosition="bottom" sclass="variform-FORM_CONTAINER_DETAILS-grid" vflex="min" hflex="min">
+			                         <columns>
+			                             <column align="right" hflex="min"/>
+			                             <column hflex="min"/>
+			                             <column align="right" hflex="min"/>
+			                             <column hflex="min"/>
+			                         </columns>
+			                         <rows>
+			                             <row sclass="variform-FORM_CONTAINER_DETAILS-grid">
+			                                 <cell rowspan="1">
+			                                     <label value="Unit Nbr:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_1)"/>
+			                                     <popup>
+			                                         <html content="A unique code identifying the unit, container number, chassis number, marks and numbers, etc."/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="APHU6510991" maxlength="0" hflex="1"/>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="ISO Group:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_2)"/>
+			                                     <popup>
+			                                         <html content="The ISO group code for the equipment. For information about ISO group codes, see http:www.smdg.org/documents."/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="General purpose container without ventilation" maxlength="0" hflex="1"/>
+			                                 </cell>
+			                             </row>
+			                             <row sclass="variform-FORM_CONTAINER_DETAILS-grid">
+			                                 <cell rowspan="1">
+			                                     <label value="Category:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_3)"/>
+			                                     <popup>
+			                                         <html content="The category of the unit (import, export, transship)."/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="Through" maxlength="0" hflex="1"/>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="Type ISO:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_4)"/>
+			                                     <popup>
+			                                         <html content="The ISO code of the equipment type. For information about ISO codes, see http://www.smdg.org/"/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="45G1" maxlength="0" hflex="1"/>
+			                                 </cell>
+			                             </row>
+			                             <row sclass="variform-FORM_CONTAINER_DETAILS-grid">
+			                                 <cell rowspan="1">
+			                                     <label value="Freight Kind:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_5)"/>
+			                                     <popup>
+			                                         <html content="Whether a shipment is all from one source (full), from several different sources (less than full container), empty, or is break bulk cargo (not containerized)."/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="FCL" maxlength="0" hflex="1"/>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="Gross Weight (kg):" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_6)"/>
+			                                     <popup>
+			                                         <html content="The weight of a container including the weight of its cargo."/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="30,000 " maxlength="0" hflex="1"/>
+			                                 </cell>
+			                             </row>
+			                             <row sclass="variform-FORM_CONTAINER_DETAILS-grid">
+			                                 <cell rowspan="1">
+			                                     <label value="Door Direction:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_7)"/>
+			                                     <popup>
+			                                         <html content="The Unit's last known Door Direction from the perspective of the current position."/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label maxlength="0" hflex="1"/>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="Position:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_8)"/>
+			                                     <popup>
+			                                         <html content="The current position of the Unit"/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="V-APLCHO001-540586" maxlength="0" hflex="1"/>
+			                                 </cell>
+			                             </row>
+			                             <row sclass="variform-FORM_CONTAINER_DETAILS-grid">
+			                                 <cell rowspan="1">
+			                                     <label value="Line Operator:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_9)"/>
+			                                     <popup>
+			                                         <html content="A unique identifier for the business unit."/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="APL" maxlength="0" hflex="1"/>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label value="Planned Position:" maxlength="0" tooltip="uuid(zb_pageHome_edit_FORM_CONTAINER_DETAILS_Popup_10)"/>
+			                                     <popup>
+			                                         <html/>
+			                                     </popup>
+			                                 </cell>
+			                                 <cell rowspan="1">
+			                                     <label maxlength="0" hflex="1"/>
+			                                 </cell>
+			                             </row>
+			                         </rows>
+			                     </grid>
+			                 </div>
+			             </window>
+			         </south>
+			     </borderlayout>
+			</tabpanel>
+		</tabpanels>
+	</tabbox>
+</zk>

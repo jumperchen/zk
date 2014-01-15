@@ -635,8 +635,8 @@ zul.mesh.MeshWidget = zk.$extends(zul.Widget, {
 		this.$supers(zul.mesh.MeshWidget, 'bind_', arguments);
 		
 		this._bindDomNode();
-		if (this._hflex != 'min')
-			this._fixHeaders();
+		//B70-ZK-2117: need fix Headers first otherwise it will cause incorrect height in borderlayout
+		this._fixHeaders();
 		if ((zk.webkit || zk.ie < 11) && this.ehead) //sync scroll for input tab key scroll
 			this.domListen_(this.ehead, 'onScroll', '_doSyncScroll');
 		
