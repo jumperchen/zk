@@ -405,11 +405,17 @@ zul.wgt.Button = zk.$extends(zul.LabelImageWidget, {
 	onSize: zk.ie < 11 ? function () {
 		_fixhgh(this);
 		_fixwidth(this);
-		if (this._uplder)
-			this._uplder.sync();
+		this.syncUplder();
 	} : function () {
-		if (this._uplder)
-			this._uplder.sync();
+		this.syncUplder();
+	},
+	syncUplder: function () {
+		//B65-ZK-2111: Sync later to prevent the external style change button offset height/width.
+		var wgt = this._uplder;
+		if (wgt)
+			setTimeout(function () {
+				wgt.sync();
+			}, 50);
 	},
 
 	doFocus_: function (evt) {
