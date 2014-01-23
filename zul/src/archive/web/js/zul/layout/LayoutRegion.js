@@ -32,6 +32,25 @@ it will be useful, but WITHOUT ANY WARRANTY.
 			}
 		}
 	}
+	
+	function _hideLayout(wgt, oldStyle) {
+		if (!wgt || !wgt.$n() || wgt._isSlide)
+			return;
+		
+		var real = wgt.$n('real');
+		
+		if (!wgt._open || !wgt._visible) {
+			jq(real).hide();
+		}
+
+		if(!wgt._visible) {
+			var colled = wgt.$n('colled');
+			if (colled)
+				jq(colled).hide();
+		}
+
+		real.style.visibility = oldStyle;
+	}
 
 /**
  * A layout region in a border layout.
@@ -509,19 +528,18 @@ zul.layout.LayoutRegion = zk.$extends(zul.Widget, {
 				});
 
 				if (!this._open) {
-					var colled = this.$n('colled'),
-						real = this.$n('real');
+					var colled = this.$n('colled');
 					if (colled)
 						jq(colled).show();
-					jq(real).hide();
 				}
-
-				if(!this._visible){
-					var colled = this.$n('colled'),
-						real = this.$n('real');
-					jq(real).hide();
-					if (colled)
-						jq(colled).hide();
+				
+				// B70-ZK-2117: Hide the layout after child widet resized.
+				if (!this._open || !this.isVisible()) {
+					var self = this,
+						rstyle = this.$n('real').style,
+						oldStyle = rstyle.visibility;
+					zk.afterMount(function() {_hideLayout(self, oldStyle);});	
+					rstyle.visibility = 'hidden';
 				}
 			}
 		}
