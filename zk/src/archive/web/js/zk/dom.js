@@ -241,7 +241,9 @@ zk.copy(zjq, {
 		return zk(el).offsetWidth();
 	}: function (el) {
 		// B65-ZK-1526: IE11 required an extra pixel as IE9/IE10
-		return zk(el).offsetWidth() + 1;
+		// B70-ZK-2117: if offsetWidth equals to 0, return 1px will cause the icorrect width.
+		var offsetWidth = zk(el).offsetWidth();
+		return offsetWidth != 0 ? offsetWidth + 1 : 0;
 	},
 
 	fixInput: zk.$void, //overriden in dom.js to fix the focus issue (losing caret...)
