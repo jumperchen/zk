@@ -13,6 +13,7 @@ ZK 6.5.6
   ZK-2138: vflex="1" not working properly with groupbox
   ZK-2140: Multiple select with Shift key does not work properly
   ZK-2143: Filedownload should support chinese file name
+  ZK-2161: JS error when modify the model of Flashchart in another tab
   
   --------
 ZK 6.5.5

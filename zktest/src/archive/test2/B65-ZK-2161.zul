@@ -1,0 +1,20 @@
+<zk>
+	<div apply="org.zkoss.zktest.test2.B65_ZK_2161_Composer">
+	<div>Click button and tab 'chart', then should not show js error</div>
+		<tabbox>
+			<tabs>
+				<tab label="reproduce"></tab>
+				<tab label="chart"></tab>
+			</tabs>
+			<tabpanels>
+				<tabpanel>
+					<button id="btnOne" label="set VB to 0"></button>
+				</tabpanel>
+				<tabpanel>
+					<flashchart id="mychart" width="500" height="250"
+						type="pie" />
+				</tabpanel>
+			</tabpanels>
+		</tabbox>
+	</div>
+</zk>
