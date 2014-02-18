@@ -17,7 +17,7 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		var v = zk.Widget.$(c)._colspan;
 		return v ? v : 1;
 	}
-	function _fixaux(cells, from, to) {
+	function _fixaux(cells, from, to, start) {
 		for (var j = 0, k = 0, cl = cells.length; j < cl; ++j) {
 			var ke = k + _colspan( zk.Widget.$(cells[j]));
 			// B70-ZK-2071: Calculate the colspan when scroll back.
@@ -36,12 +36,19 @@ it will be useful, but WITHOUT ANY WARRANTY.
 						cell.style.width = '0px';
 					}
 				}
+				
+				// ZK-2130: should reset all columns 
+				j = start;
 				for (; j < cl; ++j) {
 					var cell = cells[j];
 					if (zk.parseInt(cell.style.width) != 0)
 						break; //done
-					cell.style.display = '';
-					cell.style.width = '';
+					if (j >= to)
+						cell.style.display = cell.style.width = '';
+					else {
+						cell.style.display = 'none';
+						cell.style.width = '0px';
+					}
 					// B70-ZK-2071: Reset the colspan when the previous cell is in viewport.
 					cell.colSpan = _colspan(cell);
 				}
@@ -55,7 +62,8 @@ it will be useful, but WITHOUT ANY WARRANTY.
 		var parent = wgt.parent,
 			bdfaker = parent.ebdfaker;
 		
-		if (parent.eheadtbl) {
+		// ZK-2130: should skip fake scroll bar
+		if (parent.eheadtbl && parent._nativebar) {
 			var cells = parent._getFirstRowCells(parent.eheadrows),
 				totalcols = cells.length,
 				columns = wgt._columns,
@@ -318,7 +326,8 @@ zul.mesh.Frozen = zk.$extends(zul.Widget, {
 					var cw = zk.parseInt(cellWidth),
 						hidden = cw == 0;
 					
-					if (mesh._nativebar) {
+					//B70-ZK-2130: display none will cause width won't change on browser resizing.
+					if (mesh._nativebar && (!hdWgt._hflex || hdWgt._hflex == 'min')) {
 						mesh.ehdfaker.childNodes[i].style.display = hidden ? 'none' : '';
 						hdcells[i].style.display = hidden ? 'none' : '';
 					}
@@ -341,7 +350,7 @@ zul.mesh.Frozen = zk.$extends(zul.Widget, {
 					hdrs = mesh.eheadrows.rows;
 				for (var i = hdrs.length, r; i--;) {
 					if ((r = hdrs[i]) != hdr) //skip Column
-						_fixaux(r.cells, c + this._start, c + num); // B70-ZK-2071: Count start position.
+						_fixaux(r.cells, c + this._start, c + num, c); // B70-ZK-2071: Count start position.
 				}
 			}
 			
