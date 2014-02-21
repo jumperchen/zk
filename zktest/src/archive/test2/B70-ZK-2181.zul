@@ -1,0 +1,6 @@
+<zk>
+	<div>the radio should be checked</div>
+	<radiogroup id="rg" hflex="1">
+		<radio checked="true" label="radio" />
+	</radiogroup>
+</zk>

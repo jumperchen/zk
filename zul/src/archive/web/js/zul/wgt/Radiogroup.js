@@ -231,6 +231,30 @@ zul.wgt.Radiogroup = zk.$extends(zul.Widget, {
 				this._fixOnRemove(radio);
 			return true;
 		}
+	},
+	/* 
+	 * ZK-2181: fix the radio wrong status,
+	 * caused by https://github.com/zkoss/zk/blob/v7.0.0/zk/src/archive/web/js/zk/dom.js#L1413
+	 */  
+	fixChildrenStatus: function () {
+		var w = this.firstChild,
+			real;
+		while (w) {
+			real = w.$n('real');
+			if (w._checked && real && !real.checked) {
+				real.checked = true;
+				break;
+			}
+			w = w.nextSibling;
+		}
+	},
+	setFlexSizeH_: function(n, zkn, height, isFlexMin) {
+		this.$supers(zul.wgt.Radiogroup, 'setFlexSizeH_', arguments);
+		this.fixChildrenStatus();
+	},
+	setFlexSizeW_: function(n, zkn, width, isFlexMin) {
+		this.$supers(zul.wgt.Radiogroup, 'setFlexSizeW_', arguments);
+		this.fixChildrenStatus();
 	}
 });
 })();
