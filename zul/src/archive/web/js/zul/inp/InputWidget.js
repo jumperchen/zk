@@ -80,38 +80,19 @@ it will be useful, but WITHOUT ANY WARRANTY.
 zul.inp.RoundUtl = {
 	/** Synchronizes the input element's width of this component
 	*/
-	syncWidth: function (wgt, rightElem) {
+	syncWidth: function (wgt, rightElem, isOnSize/*speed up*/) {
 		var node = wgt.$n();
-		if (!zk(node).isRealVisible() || (!wgt._inplace && !node.style.width))
+		if ((!wgt._inplace && !node.style.width) || (!isOnSize && !zk(node).isRealVisible()))
 			return;
 		
-		var inp = wgt.getInputNode(),
-			ns = node.style;
-
-		if (!ns.width && wgt._inplace &&
-			wgt._buttonVisible !== false) {
-			ns.width = jq.px0(this.getOuterWidth(wgt, true));
+		// fixed for ZK-2216: Performance issue of Listbox and Combobox with inplace="true"
+		// calculate only when the width has size
+		if (node.style.width) {
+			var width = node.offsetWidth,
+				// ignore left border, as it is countered by margin-left
+				rightElemWidth = rightElem ? rightElem.offsetWidth : 0;
+			wgt.getInputNode().style.width = jq.px0(width - rightElemWidth);
 		}
-
-		var width = this.getOuterWidth(wgt, wgt.inRoundedMold()),
-			// ignore left border, as it is countered by margin-left
-			rightElemWidth = rightElem ? rightElem.offsetWidth : 0;
-		inp.style.width = jq.px0(width - rightElemWidth);
-	},
-	getOuterWidth: function(wgt, rmInplace) {
-		var node = wgt.$n(),
-			width = node.offsetWidth,
-			$n = jq(node),
-			inc = wgt.getInplaceCSS(),
-			shallClean = $n.hasClass(inc);
-
-		if (rmInplace && shallClean) {
-    		$n.removeClass(inc).addClass(inc);
-		}
-		if (!wgt.getWidth() && !wgt.getHflex()) {
-			width = wgt.$n('real').offsetWidth + wgt.$n('btn').offsetWidth;
-		}
-		return width;
 	},
 	// @since 7.0.0
 	buttonVisible: function (wgt, v) {
@@ -145,7 +126,7 @@ zul.inp.RoundUtl = {
 		// should not clear input node width if hflex is true
 		if (!wgt.getHflex() && (!width || width.indexOf('%') != -1))
 			wgt.getInputNode().style.width = '';
-		this.syncWidth(wgt, wgt.$n('btn'));
+		this.syncWidth(wgt, wgt.$n('btn'), true);
 	}
 };
 var InputWidget =
@@ -925,7 +906,31 @@ zul.inp.InputWidget = zk.$extends(zul.Widget, {
 	 * @type boolean
 	 * @since 5.0.1
 	 */
-	onChangingForced: true
+	onChangingForced: true,
+	
+	// for errorbox, datebox, combowidget
+	_isInView: function(wgt) {
+		var desktop = wgt.desktop,
+			p = wgt.parent,
+			n = wgt.getInputNode(),
+			bar = null, 
+			inView = true;
+	
+		// ZK-2069: check whether the input is shown in parents' viewport.
+		if (!zk.ie8_) // fine tune for ie8
+			while (p && p != desktop) {
+				bar = p._scrollbar;
+				if (bar && (bar.hasVScroll() || bar.hasHScroll())) {
+					inView = bar.isScrollIntoView(n);
+					if (!inView)
+						return inView;
+				}
+				bar = null;
+				p = p.parent;
+			}
+		// ZK-2069: should check native and fake scrollbar case
+		return inView && zk(n).isScrollIntoView(true);
+	}
 });
 
 /** @class zul.inp.InputCtrl
