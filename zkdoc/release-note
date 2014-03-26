@@ -1,10 +1,25 @@
 ZK 7.0.2
 * Features
+  ZK-2207: Dropupload Component support anchor
+  ZK-2226: Portallayout should support resizable portalchildren
+  ZK-2227: ZK Messages support Polish lang
 
 * Bugs
   ZK-2192: Combobox button does not work when other component is animating
   ZK-2178: NullPointerException showed when biglistbox doesn't provide any MatrixModel
   ZK-2185: Setting listitems draggable&droppable makes inner listbox not showing correctly in mold=select
+  ZK-2211: Popup position not properly fixed in listbox
+  ZK-2221: Biglistbox JS errors, when the Matrix model returns zero sizes
+  ZK-2220: Biglistbox with frozen horizontal scrollbar problems
+  ZK-2219: Header getting sometimes out of synch with cells in Biglistbox
+  ZK-2216: Performance issue of Listbox and Combobox with inplace="true"
+  ZK-2195: Focus input in modal window in IE
+  ZK-2194: Clients.scrollIntoView() not working on a listitem within a listbox without scrollbar, but the enclosing page has a scrollbar
+  ZK-2218: Buggy log message '%s'
+  ZK-1235: Resizing of Panels in Portal Layout is very buggy
+  ZK-2210: improve zk portlet 2 integration
+  ZK-2228: Scroll position is reset after resizing column headers of listbox or grid with native scrollbar [IE9]
+  ZK-2202: Datebox is not updated properly when enter pressed in inner timebox
 
 * Upgrade Notes
 
@@ -164,6 +179,7 @@ Nov 26, 2013
     --------
 ZK 6.5.6
 * Features
+  ZK-2227: ZK Messages support Polish lang
 
 * Bugs
   ZK-2080: Chosenbox with ListSubModel not working if using template to render data
@@ -180,6 +196,8 @@ ZK 6.5.6
   ZK-2172: Biglistbox with frozenCols missing data
   ZK-2178: NullPointerException showed when biglistbox doesn't provide any MatrixModel
   ZK-2185: Setting listitems draggable&droppable makes inner listbox not showing correctly in mold=select
+  ZK-2211: Popup position not properly fixed in listbox
+  ZK-2210: improve zk portlet 2 integration
   
   --------
 ZK 6.5.5
