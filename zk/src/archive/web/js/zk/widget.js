@@ -1832,6 +1832,13 @@ wgt.$f().main.setTitle("foo");
 					}
 
 					this.setDomVisible_(node, false);
+					
+					// Bug ZK-2236 we need to inform its parent to do the resize.
+					if (wgt._nvflex || wgt._nhflex)
+						zk.afterAnimate(function() {
+							if (wgt.parent)
+								zUtl.fireSized(wgt.parent);
+						}, -1);
 				}
 			}
 			if (p && !ocvCalled) p.onChildVisible_(this);
@@ -3111,7 +3118,7 @@ unbind_: function (skipper, after) {
 	getMarginSize_: function (attr) { //'w' for width or 'h' for height
 		return zk(this).sumStyles(attr == 'h' ? 'tb' : 'lr', jq.margins);
 	},
-	getContentEdgeHeight_: function () {
+	getContentEdgeHeight_: function (height/*current calculated height*/) {
 		var p = this.$n(),
 			fc = this.firstChild,
 			fc = fc && zk.isLoaded('zul.wgt') && fc.$instanceof(zul.wgt.Caption) ? fc.nextSibling : fc, //Bug ZK-1524: Caption should ignored
@@ -3130,7 +3137,7 @@ unbind_: function (skipper, after) {
 		}
 		return 0;
 	},
-	getContentEdgeWidth_: function () {
+	getContentEdgeWidth_: function (width/*current calculated width*/) {
 		var p = this.$n(),
 			fc = this.firstChild,
 			fc = fc && zk.isLoaded('zul.wgt') && fc.$instanceof(zul.wgt.Caption) ? fc.nextSibling : fc, //Bug ZK-1524: Caption should ignored
