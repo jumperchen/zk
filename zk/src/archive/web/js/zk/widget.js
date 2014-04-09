@@ -1821,7 +1821,7 @@ wgt.$f().main.setTitle("foo");
 					this.fire('onHide');
 					// B70-ZK-2032: Fire down onHide after animate
 					var wgt = this;
-					zk.afterAnimate(function() {zWatch.fireDown('onHide', wgt);}, -1);
+					zWatch.fireDown('onHide', this);
 
 					for (var j = _floatings.length, bindLevel = this.bindLevel; j--;) {
 						var w = _floatings[j].widget;
@@ -4327,7 +4327,7 @@ _doFooSelect: function (evt) {
 	 * @param String evtnm the event name to register, such as onClick.
 	 * @param Object fn the name ({@link String}) of the member method to handle the event,
 	 * or the function ({@link Function}).
-	 * It is optional. If omitted, <i>_doEvtnm</i> is assumed, where <i>evtnm</it>
+	 * It is optional. If omitted, <i>_doEvtnm</i> is assumed, where <i>evtnm</i>
 	 * is the value passed thru the <code>evtnm</code> argument.
 	 * For example, if the event name is onFocus, then the method is assumed to be
 	 * _doFocus.
