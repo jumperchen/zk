@@ -1,6 +1,17 @@
+ZK 6.0.6
+
+* Features
+
+* Bugs:
+  ZK-1784: client rod with hflex cause js error
+  ZK-1916: Different language codes for IE10 under Windows 8
+  ZK-2247: nested iframe reloading content when detached parent window
+
+* Upgrade Notes
+
   --------
 ZK 6.0.5
-
+May 07, 2013
 * Features
   ZK-1583: notification arrow position shall align in the center of reference widget
 
@@ -22,6 +33,7 @@ ZK 6.0.5
   ZK-1658: chosenbox disappears after user select a value
   ZK-1660: Chosenbox with ListModel issue
   ZK-1702: Invoke binder.loadAll() when the onChange event of the combobox will cause java error
+  ZK-1737: Typo in some zk.fmt.Number functions: varStr (wrong) vs valStr (right)
 
 * Upgrade Notes
 
