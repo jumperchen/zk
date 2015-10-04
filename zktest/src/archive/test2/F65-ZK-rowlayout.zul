@@ -1,0 +1,144 @@
+<zk xmlns:n="native">
+	<n:p>User can enter content directly into each gray box to change its height.</n:p>
+	<n:b>Default: ncols=12, colWidth=60, spacing=20</n:b>
+	<rowlayout>
+		<rowchildren forEach="1,1,1,1,1,1,1,1,1,1,1,1" colspan="${each}">
+			<div hflex="1">
+			colspan=1
+			</div>
+		</rowchildren>
+	</rowlayout>
+	<separator orient="horizontal" spacing="5px"/>
+	<rowlayout>
+		<rowchildren forEach="2,2,2,2,2,2" colspan="${each}">
+			<div hflex="1">
+			colspan=2
+			</div>
+		</rowchildren>
+	</rowlayout>
+	<separator orient="horizontal" spacing="5px"/>
+	<rowlayout>
+		<rowchildren forEach="3,3,3,3" colspan="${each}">
+			<div hflex="1">
+			colspan=3
+			</div>
+		</rowchildren>
+	</rowlayout>
+	<separator orient="horizontal" spacing="5px"/>
+	<rowlayout>
+		<rowchildren forEach="4,4,4" colspan="${each}">
+			<div hflex="1">
+			colspan=4
+			</div>
+		</rowchildren>
+	</rowlayout>
+	<separator orient="horizontal" spacing="5px"/>
+	<rowlayout>
+		<rowchildren forEach="6,6" colspan="${each}">
+			<div hflex="1">
+			colspan=6
+			</div>
+		</rowchildren>
+	</rowlayout>
+	<separator orient="horizontal" spacing="5px"/>
+	<rowlayout>
+		<rowchildren forEach="12" colspan="${each}">
+			<div hflex="1">
+			colspan=12
+			</div>
+		</rowchildren>
+	</rowlayout>
+
+	<n:b>ncols => 4, colWidth=60, spacing=20</n:b>
+	<rowlayout ncols="4">
+		<rowchildren forEach="1,1,1,1" colspan="${each}">
+			<div hflex="1">
+			colspan=12
+			</div>
+		</rowchildren>	
+	</rowlayout>
+	
+	<n:b>ncols=12, colWidth=60, spacing => 0</n:b>
+	<rowlayout spacing="0">
+		<rowchildren forEach="1,1,1,1,1,1,1,1,1,1,1,1" colspan="${each}">
+			<div hflex="1">
+			colspan=1
+			</div>
+		</rowchildren>
+	</rowlayout>
+
+	<n:b>ncols=12, colWidth => 20, spacing=20</n:b>
+	<rowlayout colWidth="20">
+		<rowchildren forEach="1,1,1,1,1,1,1,1,1,1,1,1" colspan="${each}">
+			<div hflex="1">
+			colspan=1
+			</div>
+		</rowchildren>
+	</rowlayout>
+	
+	<n:b>offset = 10, first child</n:b>
+	<rowlayout>
+		<rowchildren offset="10">
+			<div hflex="1">
+			offset=10
+			</div>	
+		</rowchildren>
+		<rowchildren>
+			<div hflex="1">
+			</div>
+		</rowchildren>		
+	</rowlayout>
+	
+	<n:b>offset = 10, subsequent child</n:b>
+	<rowlayout>
+		<rowchildren>
+			<div hflex="1">
+			offset=1
+			</div>	
+		</rowchildren>
+		<rowchildren offset="10">
+			<div hflex="1">
+			offset=10
+			</div>
+		</rowchildren>		
+	</rowlayout>
+	
+	<n:b>Using MVVM to control rowlayout's defining parameters</n:b>
+	<window 
+		apply="org.zkoss.bind.BindComposer" 
+		viewModel="@id('vm') @init('org.zkoss.zktest.test2.F65_ZK_Rowlayout_TestViewModel1')">
+		<rowlayout ncols="20" spacing="5">
+			<rowchildren>ncols</rowchildren>
+			<rowchildren>
+				<spinner hflex="1" value="@bind(vm.ncols)" constraint="no empty,min 1 max 12"/>
+			</rowchildren>
+			<rowchildren>colWidth</rowchildren>
+			<rowchildren>
+				<spinner hflex="1" value="@bind(vm.colWidth)" constraint="no empty,min 1"/>
+			</rowchildren>
+			<rowchildren>spacing</rowchildren>
+			<rowchildren>
+				<spinner hflex="1" value="@bind(vm.spacing)" constraint="no empty,min 0"/>
+			</rowchildren>
+		</rowlayout>
+		<rowlayout id="rowlayout1" ncols="@bind(vm.ncols)" colWidth="@bind(vm.colWidth)" spacing="@bind(vm.spacing)">
+			<rowchildren forEach="1,1,1,1,1,1,1,1,1,1,1,1" colspan="${each}">
+				<div hflex="1"/>
+			</rowchildren>
+		</rowlayout>
+	</window>
+
+	<style>
+	.z-rowlayout:hover {
+		background-color: #84FFB9;
+	}
+	</style>
+	
+	<script defer="true">
+	jq('@div')
+		.attr('contentEditable', '')
+		.css('min-height', '30px')
+		.css('background-color', '#ccc')
+		.css('border-radius', '10px');
+	</script>
+</zk>

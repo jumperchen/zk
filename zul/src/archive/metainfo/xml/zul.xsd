@@ -2321,7 +2321,28 @@
 		<xs:attribute name="valign" type="valignAttrType" use="optional" />
 		<xs:attribute name="value" type="xs:string" use="optional" />
 	</xs:complexType>
-    <!-- rows -->
+	<!-- rowchildren -->
+	<xs:element name="rowchildren" type="rowchildrenType" />
+	<xs:complexType name="rowchildrenType">
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:group ref="anyGroup" />
+		</xs:choice>
+		<xs:attribute name="colspan" type="intType" use="optional" />
+		<xs:attribute name="offset" type="intType" use="optional" />
+	</xs:complexType>
+	<!-- rowlayout -->
+	<xs:element name="rowlayout" type="rowlayoutType" />
+	<xs:complexType name="rowlayoutType">
+		<xs:choice minOccurs="0" maxOccurs="unbounded">
+			<xs:group ref="baseGroup" />
+			<xs:element ref="rowchildren" />
+		</xs:choice>
+		<xs:attributeGroup ref="htmlBasedComponentAttrGroup" />
+		<xs:attribute name="ncols"	type="intType" use="optional" />
+		<xs:attribute name="colWidth" type="intType" use="optional" />
+		<xs:attribute name="spacing" type="intType" use="optional" />
+	</xs:complexType>
+	<!-- rows -->
 	<xs:element name="rows" type="rowsType" />
 	<xs:complexType name="rowsType">
 		<xs:choice minOccurs="0" maxOccurs="unbounded">

@@ -998,6 +998,26 @@ def alert(m):
 		</mold>
 	</component>
 	<component>
+	    <component-name>rowchildren</component-name>
+	    <component-class>org.zkoss.zul.Rowchildren</component-class>
+	    <widget-class>zul.layout.Rowchildren</widget-class>
+	    <mold>
+	        <mold-name>default</mold-name>
+	        <mold-uri>mold/rowchildren.js</mold-uri>
+	        <css-uri>css/rowchildren.css.dsp</css-uri>
+	    </mold>
+	</component>
+	<component>
+	    <component-name>rowlayout</component-name>
+	    <component-class>org.zkoss.zul.Rowlayout</component-class>
+	    <widget-class>zul.layout.Rowlayout</widget-class>
+	    <mold>
+	        <mold-name>default</mold-name>
+	        <mold-uri>mold/rowlayout.js</mold-uri>
+	        <css-uri>css/rowlayout.css.dsp</css-uri>
+	    </mold>
+	</component>
+	<component>
 		<component-name>rows</component-name>
 		<component-class>org.zkoss.zul.Rows</component-class>
 		<widget-class>zul.grid.Rows</widget-class>
